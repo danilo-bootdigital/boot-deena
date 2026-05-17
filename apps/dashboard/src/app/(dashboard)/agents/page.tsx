@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
+import { useAuth, useApi } from '@/hooks/use-auth';
+import { useOrganization } from '@/hooks/use-organization';
 import { api } from '@/lib/api';
-import { createClient } from '@/lib/supabase';
 
 interface Agent {
   id: string;
@@ -18,7 +19,9 @@ interface Agent {
 }
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const { session } = useAuth();
+  const { currentOrg } = useOrganization();
+  const { data: agents, mutate } = useApi<Agent[]>('/agents', currentOrg?.id);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,42 +35,22 @@ export default function AgentsPage() {
     max_tokens: 1024,
   });
 
-  const supabase = createClient();
-
-  async function getAuthHeaders() {
-    const { data: { session } } = await supabase.auth.getSession();
-    return { token: session?.access_token, orgId: session?.user?.user_metadata?.org_id };
-  }
-
-  async function loadAgents() {
-    try {
-      const { token, orgId } = await getAuthHeaders();
-      if (!token) return;
-      const data = await api<Agent[]>('/agents', { token, orgId });
-      setAgents(data);
-    } catch (err: any) {
-      console.error('Failed to load agents:', err);
-    }
-  }
-
-  useEffect(() => { loadAgents(); }, []);
-
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const { token, orgId } = await getAuthHeaders();
-      if (!token) throw new Error('Não autenticado');
+      if (!session?.access_token) throw new Error('Não autenticado');
+      if (!currentOrg?.id) throw new Error('Nenhuma organização selecionada');
       await api('/agents', {
         method: 'POST',
-        token,
-        orgId,
+        token: session.access_token,
+        orgId: currentOrg.id,
         body: JSON.stringify(form),
       });
       setShowForm(false);
       setForm({ name: '', description: '', system_prompt: 'Você é um assistente útil e amigável.', provider: 'openai', model: 'gpt-4o-mini', temperature: 0.7, max_tokens: 1024 });
-      await loadAgents();
+      mutate();
     } catch (err: any) {
       setError(err.message || 'Erro ao criar agente');
     } finally {
@@ -154,7 +137,7 @@ export default function AgentsPage() {
         </Card>
       )}
 
-      {agents.length > 0 ? (
+      {agents && agents.length > 0 ? (
         <div className="grid gap-4">
           {agents.map((agent) => (
             <Card key={agent.id}>
