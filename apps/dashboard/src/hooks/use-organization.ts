@@ -48,6 +48,8 @@ export function useOrganization() {
           if (createRes.ok) {
             const newOrg = await createRes.json();
             orgs = [{ ...newOrg, role: 'owner' }];
+          } else {
+            console.error('Failed to create org:', await createRes.text());
           }
         }
 

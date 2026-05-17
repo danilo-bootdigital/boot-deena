@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
   app.enableCors({
-    origin: process.env.DASHBOARD_URL || 'http://localhost:3000',
+    origin: true,
     credentials: true,
   });
 
