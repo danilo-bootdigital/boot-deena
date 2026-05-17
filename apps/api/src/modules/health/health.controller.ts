@@ -1,5 +1,5 @@
 import { Controller, Get, Headers } from '@nestjs/common';
-import { createSupabaseClient } from '@agente-ia/database';
+import { createClient } from '@supabase/supabase-js';
 
 @Controller('health')
 export class HealthController {
@@ -30,7 +30,7 @@ export class HealthController {
     }
     const token = authHeader.substring(7);
     try {
-      const supabase = createSupabaseClient(
+      const supabase = createClient(
         process.env.SUPABASE_URL!,
         process.env.SUPABASE_ANON_KEY!,
       );
