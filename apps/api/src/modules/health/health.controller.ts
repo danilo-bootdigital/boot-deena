@@ -29,18 +29,24 @@ export class HealthController {
       return { error: 'No bearer token provided' };
     }
     const token = authHeader.substring(7);
+    const url = process.env.SUPABASE_URL!;
+    const anonKey = process.env.SUPABASE_ANON_KEY!;
+
+    // Test 1: direct fetch to Supabase (bypass JS client)
     try {
-      const supabase = createClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_ANON_KEY!,
-      );
-      const { data, error } = await supabase.auth.getUser(token);
-      if (error) {
-        return { error: error.message, code: error.status, tokenPrefix: token.substring(0, 30) };
+      const res = await fetch(`${url}/auth/v1/user`, {
+        headers: {
+          'apikey': anonKey,
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true, method: 'direct-fetch', userId: data.id, email: data.email };
       }
-      return { success: true, userId: data.user?.id, email: data.user?.email };
+      return { error: 'direct-fetch-failed', status: res.status, body: data, anonKeyLen: anonKey.length, urlUsed: url };
     } catch (err: any) {
-      return { error: err.message, stack: err.stack?.split('\n').slice(0, 3) };
+      return { error: err.message };
     }
   }
 }
