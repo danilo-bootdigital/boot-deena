@@ -11,11 +11,16 @@ import { createClient } from '@supabase/supabase-js';
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
   private supabase;
+  private supabaseAdmin;
 
   constructor(private configService: ConfigService) {
     this.supabase = createClient(
       this.configService.getOrThrow('app.supabaseUrl'),
       this.configService.getOrThrow('app.supabaseAnonKey'),
+    );
+    this.supabaseAdmin = createClient(
+      this.configService.getOrThrow('app.supabaseUrl'),
+      this.configService.getOrThrow('app.supabaseServiceRoleKey'),
     );
   }
 
@@ -38,10 +43,9 @@ export class SupabaseAuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token');
     }
 
-    // Verificar pertencimento à organização
     const orgId = request.headers['x-organization-id'];
     if (orgId) {
-      const { data: membership } = await this.supabase
+      const { data: membership } = await this.supabaseAdmin
         .from('org_members')
         .select('role')
         .eq('user_id', user.id)
