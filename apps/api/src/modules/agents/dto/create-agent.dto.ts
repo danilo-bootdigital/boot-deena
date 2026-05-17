@@ -1,0 +1,18 @@
+import { z } from 'zod';
+
+export const createAgentSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  system_prompt: z.string().min(1),
+  provider: z.enum(['openai', 'anthropic']).default('openai'),
+  model: z
+    .enum(['gpt-4o', 'gpt-4o-mini', 'claude-sonnet-4-20250514', 'claude-haiku-4-20250514'])
+    .default('gpt-4o-mini'),
+  temperature: z.number().min(0).max(2).default(0.7),
+  max_tokens: z.number().min(100).max(8192).default(1024),
+});
+
+export const updateAgentSchema = createAgentSchema.partial();
+
+export type CreateAgentDto = z.infer<typeof createAgentSchema>;
+export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;

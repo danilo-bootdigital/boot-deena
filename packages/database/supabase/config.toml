@@ -1,0 +1,12 @@
+[project_id]
+id = "agente-ia-local"
+
+[api]
+port = 54321
+
+[db]
+port = 5432
+major_version = 15
+
+[studio]
+port = 54323

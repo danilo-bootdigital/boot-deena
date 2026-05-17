@@ -1,0 +1,12 @@
+node_modules
+.git
+.github
+docs
+*.md
+.env*
+.turbo
+dist
+.next
+coverage
+.DS_Store
+docker/volumes
