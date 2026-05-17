@@ -20,12 +20,20 @@ import { redisConfig } from './config/redis.config';
       load: [appConfig, redisConfig],
     }),
     BullModule.forRootAsync({
-      useFactory: () => ({
-        connection: {
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT || '6379'),
-        },
-      }),
+      useFactory: () => {
+        const redisUrl = process.env.REDIS_URL;
+        if (redisUrl) {
+          return { connection: { url: redisUrl, maxRetriesPerRequest: null } };
+        }
+        return {
+          connection: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379'),
+            password: process.env.REDIS_PASSWORD || undefined,
+            maxRetriesPerRequest: null,
+          },
+        };
+      },
     }),
     HealthModule,
     OrganizationsModule,
