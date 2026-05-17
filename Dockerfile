@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN pnpm --filter @agente-ia/shared build && \
     pnpm --filter @agente-ia/api build
 
 # Production - keep full monorepo structure for pnpm symlinks
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 ENV NODE_ENV=production
