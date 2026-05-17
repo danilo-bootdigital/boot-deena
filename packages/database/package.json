@@ -11,10 +11,12 @@
     "generate-types": "supabase gen types typescript --local > src/types/supabase.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.0"
+    "@supabase/supabase-js": "^2.47.0",
+    "ws": "^8.20.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "supabase": "^2.0.0"
+    "@types/ws": "^8.18.1",
+    "supabase": "^2.0.0",
+    "typescript": "^5.7.0"
   }
 }

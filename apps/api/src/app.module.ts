@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
+import { join } from 'path';
 import { AgentsModule } from './modules/agents/agents.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
@@ -17,6 +18,7 @@ import { redisConfig } from './config/redis.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [join(__dirname, '..', '..', '..', '.env'), '.env'],
       load: [appConfig, redisConfig],
     }),
     BullModule.forRootAsync({

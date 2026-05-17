@@ -6,7 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseClient, createSupabaseAdmin } from '@agente-ia/database';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
@@ -14,11 +14,11 @@ export class SupabaseAuthGuard implements CanActivate {
   private supabaseAdmin;
 
   constructor(private configService: ConfigService) {
-    this.supabase = createClient(
+    this.supabase = createSupabaseClient(
       this.configService.getOrThrow('app.supabaseUrl'),
       this.configService.getOrThrow('app.supabaseAnonKey'),
     );
-    this.supabaseAdmin = createClient(
+    this.supabaseAdmin = createSupabaseAdmin(
       this.configService.getOrThrow('app.supabaseUrl'),
       this.configService.getOrThrow('app.supabaseServiceRoleKey'),
     );

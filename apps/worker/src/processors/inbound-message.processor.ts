@@ -1,9 +1,11 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
+import { generate } from '@agente-ia/ai';
 import { ConversationResolverService } from '../services/conversation-resolver.service';
 import { MessageStoreService } from '../services/message-store.service';
 import { EvolutionSenderService } from '../services/evolution-sender.service';
+import { AgentLoaderService } from '../services/agent-loader.service';
 
 interface InboundMessageJob {
   instanceName: string;
@@ -25,6 +27,7 @@ export class InboundMessageProcessor extends WorkerHost {
     private conversationResolver: ConversationResolverService,
     private messageStore: MessageStoreService,
     private evolutionSender: EvolutionSenderService,
+    private agentLoader: AgentLoaderService,
   ) {
     super();
   }
@@ -45,12 +48,14 @@ export class InboundMessageProcessor extends WorkerHost {
         whatsappMessageId: messageId,
       });
 
-      // TODO: Integrar com @agente-ia/ai (Plano 06)
-      const aiResponse = {
-        content: `Recebi sua mensagem: "${message.content}"`,
-        tokensInput: 0,
-        tokensOutput: 0,
-      };
+      const agent = await this.agentLoader.load(resolved.agentId);
+      const history = await this.messageStore.getConversationHistory(resolved.conversationId);
+
+      const aiResponse = await generate({
+        agent,
+        messages: history as any,
+        userMessage: message.content,
+      });
 
       await this.messageStore.saveAssistantMessage({
         conversationId: resolved.conversationId,

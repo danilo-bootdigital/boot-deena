@@ -20,7 +20,7 @@ interface Agent {
 
 export default function AgentsPage() {
   const { session } = useAuth();
-  const { currentOrg, loading: orgLoading } = useOrganization();
+  const { currentOrg, loading: orgLoading, error: orgError, retry: retryOrg } = useOrganization();
   const { data: agents, mutate } = useApi<Agent[]>('/agents', currentOrg?.id);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -129,6 +129,12 @@ export default function AgentsPage() {
                 </div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
+              {orgError && (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-red-500">{orgError}</p>
+                  <button type="button" onClick={retryOrg} className="text-sm text-blue-600 underline">Tentar novamente</button>
+                </div>
+              )}
               {orgLoading && <p className="text-sm text-yellow-600">Carregando organização...</p>}
               <Button type="submit" disabled={loading || orgLoading || !currentOrg}>
                 {loading ? 'Criando...' : 'Criar Agente'}

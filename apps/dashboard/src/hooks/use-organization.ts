@@ -16,9 +16,11 @@ export function useOrganization() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const loadOrganizations = useCallback(async () => {
     try {
+      setError(null);
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -30,32 +32,38 @@ export function useOrganization() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (response.ok) {
-        let orgs = await response.json();
-
-        if (orgs.length === 0) {
-          const email = (session.user.email ?? 'user').toLowerCase();
-          const slug = (email.split('@')[0] ?? 'user').replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-          const uniqueSlug = `${slug}-${Date.now().toString(36).slice(-4)}`;
-          const createRes = await fetch(`${API_URL}/organizations`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name: 'Minha Empresa', slug: uniqueSlug }),
-          });
-          if (createRes.ok) {
-            const newOrg = await createRes.json();
-            orgs = [{ ...newOrg, role: 'owner' }];
-          }
-        }
-
-        setOrganizations(orgs);
-        const savedOrgId = localStorage.getItem('currentOrgId');
-        const saved = orgs.find((o: Organization) => o.id === savedOrgId);
-        setCurrentOrg(saved || orgs[0] || null);
+      if (!response.ok) {
+        setError(`Erro ao carregar organizações (${response.status})`);
+        setLoading(false);
+        return;
       }
+
+      let orgs = await response.json();
+
+      if (orgs.length === 0) {
+        const email = (session.user.email ?? 'user').toLowerCase();
+        const slug = (email.split('@')[0] ?? 'user').replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        const uniqueSlug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+        const createRes = await fetch(`${API_URL}/organizations`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: 'Minha Empresa', slug: uniqueSlug }),
+        });
+        if (createRes.ok) {
+          const newOrg = await createRes.json();
+          orgs = [{ ...newOrg, role: 'owner' }];
+        }
+      }
+
+      setOrganizations(orgs);
+      const savedOrgId = localStorage.getItem('currentOrgId');
+      const saved = orgs.find((o: Organization) => o.id === savedOrgId);
+      setCurrentOrg(saved || orgs[0] || null);
+    } catch (err: any) {
+      setError('Não foi possível conectar à API. Verifique se o servidor está rodando.');
     } finally {
       setLoading(false);
     }
@@ -85,5 +93,5 @@ export function useOrganization() {
     }
   };
 
-  return { organizations, currentOrg, switchOrg, loading };
+  return { organizations, currentOrg, switchOrg, loading, error, retry: loadOrganizations };
 }

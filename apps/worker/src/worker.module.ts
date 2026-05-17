@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
+import { join } from 'path';
 import { QUEUES } from '@agente-ia/shared';
 import { InboundMessageProcessor } from './processors/inbound-message.processor';
 import { OutboundMessageProcessor } from './processors/outbound-message.processor';
@@ -8,6 +9,7 @@ import { RagProcessor } from './processors/rag.processor';
 import { ConversationResolverService } from './services/conversation-resolver.service';
 import { MessageStoreService } from './services/message-store.service';
 import { EvolutionSenderService } from './services/evolution-sender.service';
+import { AgentLoaderService } from './services/agent-loader.service';
 import { DocumentProcessorService } from './services/rag/document-processor.service';
 import { VectorSearchService } from './services/rag/vector-search.service';
 import { FlowEngineService } from './services/flow/flow-engine.service';
@@ -17,6 +19,7 @@ import { workerConfig } from './config/worker.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: [join(__dirname, '..', '..', '..', '.env'), '.env'],
       load: [workerConfig],
     }),
     BullModule.forRootAsync({
@@ -48,6 +51,7 @@ import { workerConfig } from './config/worker.config';
     ConversationResolverService,
     MessageStoreService,
     EvolutionSenderService,
+    AgentLoaderService,
     DocumentProcessorService,
     VectorSearchService,
     FlowEngineService,
