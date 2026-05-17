@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - '3001:3001'
     env_file: .env
@@ -20,7 +20,7 @@ services:
   worker:
     build:
       context: .
-      dockerfile: apps/worker/Dockerfile
+      dockerfile: Dockerfile.worker
     env_file: .env
     depends_on:
       - redis
@@ -29,7 +29,7 @@ services:
   dashboard:
     build:
       context: .
-      dockerfile: apps/dashboard/Dockerfile
+      dockerfile: Dockerfile.dashboard
       args:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
@@ -47,15 +47,5 @@ services:
     command: redis-server --appendonly yes
     restart: unless-stopped
 
-  evolution:
-    image: atendai/evolution-api:latest
-    ports:
-      - '8080:8080'
-    env_file: .env
-    volumes:
-      - evolution_data:/evolution/instances
-    restart: unless-stopped
-
 volumes:
   redis_data:
-  evolution_data:
