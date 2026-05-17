@@ -20,7 +20,7 @@ interface Agent {
 
 export default function AgentsPage() {
   const { session } = useAuth();
-  const { currentOrg } = useOrganization();
+  const { currentOrg, loading: orgLoading } = useOrganization();
   const { data: agents, mutate } = useApi<Agent[]>('/agents', currentOrg?.id);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,8 +40,8 @@ export default function AgentsPage() {
     setLoading(true);
     setError('');
     try {
-      if (!session?.access_token) throw new Error('Não autenticado');
-      if (!currentOrg?.id) throw new Error('Nenhuma organização selecionada');
+      if (!session?.access_token) throw new Error('Não autenticado. Faça login novamente.');
+      if (!currentOrg?.id) throw new Error('Carregando organização... tente novamente em instantes.');
       await api('/agents', {
         method: 'POST',
         token: session.access_token,
@@ -129,7 +129,8 @@ export default function AgentsPage() {
                 </div>
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" disabled={loading}>
+              {orgLoading && <p className="text-sm text-yellow-600">Carregando organização...</p>}
+              <Button type="submit" disabled={loading || orgLoading || !currentOrg}>
                 {loading ? 'Criando...' : 'Criar Agente'}
               </Button>
             </form>
