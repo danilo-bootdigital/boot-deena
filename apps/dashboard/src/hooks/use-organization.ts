@@ -35,8 +35,8 @@ export function useOrganization() {
         let orgs = await response.json();
 
         if (orgs.length === 0) {
-          const email = session.user.email || 'user';
-          const slug = email.split('@')[0].replace(/[^a-z0-9]/g, '-');
+          const email = session.user.email ?? 'user';
+          const slug = (email.split('@')[0] ?? 'user').replace(/[^a-z0-9]/g, '-');
           const createRes = await fetch(`${API_URL}/organizations`, {
             method: 'POST',
             headers: {
