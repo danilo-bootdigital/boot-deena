@@ -14,6 +14,7 @@ RUN pnpm install --frozen-lockfile
 
 # Build
 FROM deps AS builder
+ARG GIT_SHA=unknown
 COPY . .
 RUN pnpm --filter @agente-ia/shared build && \
     pnpm --filter @agente-ia/database build && \
