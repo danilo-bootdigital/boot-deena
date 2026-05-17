@@ -1,5 +1,4 @@
 import { Controller, Get, Headers } from '@nestjs/common';
-import { createClient } from '@supabase/supabase-js';
 
 @Controller('health')
 export class HealthController {
@@ -17,8 +16,11 @@ export class HealthController {
     return {
       supabaseUrl: process.env.SUPABASE_URL || 'NOT SET',
       hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
+      anonKeyLen: (process.env.SUPABASE_ANON_KEY || '').length,
       anonKeyPrefix: (process.env.SUPABASE_ANON_KEY || '').substring(0, 20) + '...',
+      anonKeySuffix: '...' + (process.env.SUPABASE_ANON_KEY || '').slice(-20),
       hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      serviceKeyLen: (process.env.SUPABASE_SERVICE_ROLE_KEY || '').length,
       nodeEnv: process.env.NODE_ENV,
     };
   }
@@ -32,7 +34,6 @@ export class HealthController {
     const url = process.env.SUPABASE_URL!;
     const anonKey = process.env.SUPABASE_ANON_KEY!;
 
-    // Test 1: direct fetch to Supabase (bypass JS client)
     try {
       const res = await fetch(`${url}/auth/v1/user`, {
         headers: {
@@ -40,11 +41,11 @@ export class HealthController {
           'Authorization': `Bearer ${token}`,
         },
       });
-      const data = await res.json();
+      const data = await res.json() as any;
       if (res.ok) {
-        return { success: true, method: 'direct-fetch', userId: data.id, email: data.email };
+        return { success: true, userId: data.id, email: data.email };
       }
-      return { error: 'direct-fetch-failed', status: res.status, body: data, anonKeyLen: anonKey.length, urlUsed: url };
+      return { error: 'auth-failed', status: res.status, body: data, anonKeyLen: anonKey.length };
     } catch (err: any) {
       return { error: err.message };
     }
