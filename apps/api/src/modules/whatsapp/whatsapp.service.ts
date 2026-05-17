@@ -8,11 +8,18 @@ export class WhatsappService {
   private readonly apiKey: string;
 
   constructor(private configService: ConfigService) {
-    this.baseUrl = this.configService.getOrThrow('app.evolutionApiUrl');
-    this.apiKey = this.configService.getOrThrow('app.evolutionApiKey');
+    this.baseUrl = this.configService.get('app.evolutionApiUrl') || '';
+    this.apiKey = this.configService.get('app.evolutionApiKey') || '';
+  }
+
+  private assertConfigured() {
+    if (!this.baseUrl) {
+      throw new Error('Evolution API not configured. Set EVOLUTION_API_URL.');
+    }
   }
 
   private async request(path: string, options: RequestInit = {}) {
+    this.assertConfigured();
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers: {
