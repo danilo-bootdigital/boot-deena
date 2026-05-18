@@ -111,9 +111,14 @@ export class FlowEngineService {
 
         case 'set_variable': {
           const varName = currentStep.config.variable_name as string;
-          const varValue = currentStep.config.value;
+          let varValue = currentStep.config.value as string;
           if (varName) {
-            context.variables[varName] = varValue;
+            if (varValue === '{{user_message}}') {
+              varValue = context.userMessage;
+            } else if (varValue && varValue.includes('{{')) {
+              varValue = this.interpolateVariables(varValue, context.variables);
+            }
+            context.variables[varName] = varValue || context.userMessage;
           }
           currentStep = this.getNextStep(steps, currentStep.next_step_id);
           break;
@@ -204,8 +209,11 @@ export class FlowEngineService {
     switch (operator) {
       case 'equals':
         return fieldValue === value;
-      case 'contains':
-        return String(fieldValue || '').toLowerCase().includes(String(value).toLowerCase());
+      case 'contains': {
+        const fieldStr = String(fieldValue || '').toLowerCase();
+        const values = String(value).split(',').map((v) => v.trim().toLowerCase());
+        return values.some((v) => v && fieldStr.includes(v));
+      }
       case 'not_empty':
         return !!fieldValue;
       case 'greater_than':

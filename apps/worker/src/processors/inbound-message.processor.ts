@@ -1,6 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
+import { ConfigService } from '@nestjs/config';
+import { createSupabaseAdmin } from '@agente-ia/database';
 import { generate } from '@agente-ia/ai';
 import { ConversationResolverService } from '../services/conversation-resolver.service';
 import { MessageStoreService } from '../services/message-store.service';
@@ -37,8 +39,10 @@ interface FlowEdge {
 })
 export class InboundMessageProcessor extends WorkerHost {
   private readonly logger = new Logger(InboundMessageProcessor.name);
+  private supabase;
 
   constructor(
+    private configService: ConfigService,
     private conversationResolver: ConversationResolverService,
     private messageStore: MessageStoreService,
     private evolutionSender: EvolutionSenderService,
@@ -46,6 +50,10 @@ export class InboundMessageProcessor extends WorkerHost {
     private flowEngine: FlowEngineService,
   ) {
     super();
+    this.supabase = createSupabaseAdmin(
+      this.configService.getOrThrow('worker.supabaseUrl'),
+      this.configService.getOrThrow('worker.supabaseServiceRoleKey'),
+    );
   }
 
   async process(job: Job<InboundMessageJob>): Promise<void> {
@@ -55,6 +63,14 @@ export class InboundMessageProcessor extends WorkerHost {
 
     try {
       const resolved = await this.conversationResolver.resolve(instanceName, remoteJid, pushName);
+
+      // Cancelar follow-ups pendentes quando o paciente responde
+      await this.supabase
+        .from('scheduled_messages')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('conversation_id', resolved.conversationId)
+        .eq('status', 'pending')
+        .in('message_type', ['follow_up_1h', 'follow_up_24h', 'follow_up_3d']);
 
       await this.messageStore.saveUserMessage({
         conversationId: resolved.conversationId,
@@ -144,6 +160,8 @@ export class InboundMessageProcessor extends WorkerHost {
             reason: node.data?.reason,
             variable_name: node.data?.variable_name,
             endpoint_url: node.data?.endpoint_url,
+            delay_minutes: node.data?.delay_minutes,
+            message_type: node.data?.message_type,
           },
           next_step_id: nextEdge?.target || null,
           condition_true_step_id: node.type === 'condition' ? nextEdge?.target || null : null,
