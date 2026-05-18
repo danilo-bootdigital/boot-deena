@@ -6,8 +6,12 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
 
+  const allowedOrigins = process.env.DASHBOARD_URL
+    ? process.env.DASHBOARD_URL.split(',')
+    : true;
+
   app.enableCors({
-    origin: process.env.DASHBOARD_URL || true,
+    origin: allowedOrigins,
     credentials: true,
   });
 

@@ -3,9 +3,11 @@ import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
-import { AgentsService } from './agents.service';
+import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { createAgentSchema, updateAgentSchema } from './dto/create-agent.dto';
+import { AgentsService } from './agents.service';
+import { createAgentSchema, updateAgentSchema, chatSchema } from './dto/create-agent.dto';
+import type { ChatDto } from './dto/create-agent.dto';
 
 @Controller('agents')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -18,7 +20,7 @@ export class AgentsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentOrg() orgId: string) {
+  findOne(@Param('id', UuidValidationPipe) id: string, @CurrentOrg() orgId: string) {
     return this.agentsService.findOne(id, orgId);
   }
 
@@ -34,7 +36,7 @@ export class AgentsController {
   @Put(':id')
   @Roles('owner', 'admin')
   update(
-    @Param('id') id: string,
+    @Param('id', UuidValidationPipe) id: string,
     @Body(new ZodValidationPipe(updateAgentSchema)) body: unknown,
     @CurrentOrg() orgId: string,
   ) {
@@ -43,14 +45,14 @@ export class AgentsController {
 
   @Delete(':id')
   @Roles('owner', 'admin')
-  remove(@Param('id') id: string, @CurrentOrg() orgId: string) {
+  remove(@Param('id', UuidValidationPipe) id: string, @CurrentOrg() orgId: string) {
     return this.agentsService.remove(id, orgId);
   }
 
   @Post(':id/chat')
   chat(
-    @Param('id') id: string,
-    @Body() body: { message: string; history?: Array<{ role: string; content: string }> },
+    @Param('id', UuidValidationPipe) id: string,
+    @Body(new ZodValidationPipe(chatSchema)) body: ChatDto,
     @CurrentOrg() orgId: string,
   ) {
     return this.agentsService.chat(id, orgId, body.message, body.history || []);

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createSupabaseAdmin } from '@agente-ia/database';
 import type { CreateOrganizationDto, UpdateOrganizationDto, InviteMemberDto } from './dto/create-organization.dto';
@@ -36,7 +36,6 @@ export class OrganizationsService {
   }
 
   async create(userId: string, dto: CreateOrganizationDto) {
-    // Check slug uniqueness
     const { data: existing } = await this.supabase
       .from('organizations')
       .select('id')
@@ -55,7 +54,6 @@ export class OrganizationsService {
 
     if (error) throw error;
 
-    // Add creator as owner
     await this.supabase
       .from('org_members')
       .insert({
@@ -68,6 +66,19 @@ export class OrganizationsService {
   }
 
   async update(id: string, dto: UpdateOrganizationDto) {
+    if (dto.slug) {
+      const { data: existing } = await this.supabase
+        .from('organizations')
+        .select('id')
+        .eq('slug', dto.slug)
+        .neq('id', id)
+        .single();
+
+      if (existing) {
+        throw new ConflictException('Slug already in use');
+      }
+    }
+
     const { data, error } = await this.supabase
       .from('organizations')
       .update(dto)
@@ -90,20 +101,30 @@ export class OrganizationsService {
   }
 
   async inviteMember(organizationId: string, dto: InviteMemberDto) {
-    // Look up user by email
-    const { data: users } = await this.supabase.auth.admin.listUsers();
-    const user = users?.users?.find((u) => u.email === dto.email);
+    const { data: userData, error: userError } = await this.supabase
+      .rpc('get_user_id_by_email', { email_input: dto.email });
 
-    if (!user) {
-      throw new NotFoundException('User not found with this email');
+    let userId: string | null = null;
+
+    if (!userError && userData) {
+      userId = userData;
+    } else {
+      const { data: users } = await this.supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1,
+      });
+      const user = users?.users?.find((u) => u.email === dto.email);
+      if (!user) {
+        throw new NotFoundException('User not found with this email');
+      }
+      userId = user.id;
     }
 
-    // Check if already a member
     const { data: existing } = await this.supabase
       .from('org_members')
       .select('user_id')
       .eq('organization_id', organizationId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (existing) {
@@ -114,15 +135,30 @@ export class OrganizationsService {
       .from('org_members')
       .insert({
         organization_id: organizationId,
-        user_id: user.id,
+        user_id: userId,
         role: dto.role,
       });
 
     if (error) throw error;
-    return { invited: true, userId: user.id };
+    return { invited: true, userId };
   }
 
   async removeMember(organizationId: string, userId: string) {
+    const { data: member } = await this.supabase
+      .from('org_members')
+      .select('role')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+
+    if (member.role === 'owner') {
+      throw new ForbiddenException('Cannot remove the organization owner');
+    }
+
     const { error } = await this.supabase
       .from('org_members')
       .delete()

@@ -9,7 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentOrg } from '../../common/decorators/current-org.decorator';
+import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { OrganizationsService } from './organizations.service';
 import {
@@ -29,7 +33,7 @@ export class OrganizationsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', UuidValidationPipe) id: string) {
     return this.orgsService.findOne(id);
   }
 
@@ -42,28 +46,39 @@ export class OrganizationsController {
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
   update(
-    @Param('id') id: string,
+    @Param('id', UuidValidationPipe) _id: string,
     @Body(new ZodValidationPipe(updateOrganizationSchema)) body: unknown,
+    @CurrentOrg() orgId: string,
   ) {
-    return this.orgsService.update(id, body as any);
+    return this.orgsService.update(orgId, body as any);
   }
 
   @Get(':id/members')
-  getMembers(@Param('id') id: string) {
-    return this.orgsService.getMembers(id);
+  @UseGuards(RolesGuard)
+  getMembers(@CurrentOrg() orgId: string) {
+    return this.orgsService.getMembers(orgId);
   }
 
   @Post(':id/members')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
   inviteMember(
-    @Param('id') id: string,
+    @CurrentOrg() orgId: string,
     @Body(new ZodValidationPipe(inviteMemberSchema)) body: unknown,
   ) {
-    return this.orgsService.inviteMember(id, body as any);
+    return this.orgsService.inviteMember(orgId, body as any);
   }
 
   @Delete(':id/members/:userId')
-  removeMember(@Param('id') id: string, @Param('userId') userId: string) {
-    return this.orgsService.removeMember(id, userId);
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
+  removeMember(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+  ) {
+    return this.orgsService.removeMember(orgId, userId);
   }
 }

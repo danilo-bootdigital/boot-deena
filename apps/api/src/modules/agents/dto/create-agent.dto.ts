@@ -14,5 +14,14 @@ export const createAgentSchema = z.object({
 
 export const updateAgentSchema = createAgentSchema.partial();
 
+export const chatSchema = z.object({
+  message: z.string().min(1).max(10000),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().max(50000),
+  })).max(100).optional().default([]),
+});
+
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type UpdateAgentDto = z.infer<typeof updateAgentSchema>;
+export type ChatDto = z.infer<typeof chatSchema>;

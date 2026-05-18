@@ -12,12 +12,15 @@ import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
+import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { KnowledgeBaseService } from './knowledge-base.service';
 import {
   createKnowledgeBaseSchema,
   updateKnowledgeBaseSchema,
+  addDocumentSchema,
 } from './dto/create-knowledge-base.dto';
+import type { AddDocumentDto } from './dto/create-knowledge-base.dto';
 
 @Controller('knowledge-bases')
 @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -30,7 +33,7 @@ export class KnowledgeBaseController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentOrg() orgId: string) {
+  findOne(@Param('id', UuidValidationPipe) id: string, @CurrentOrg() orgId: string) {
     return this.kbService.findOne(id, orgId);
   }
 
@@ -46,7 +49,7 @@ export class KnowledgeBaseController {
   @Put(':id')
   @Roles('owner', 'admin')
   update(
-    @Param('id') id: string,
+    @Param('id', UuidValidationPipe) id: string,
     @Body(new ZodValidationPipe(updateKnowledgeBaseSchema)) body: unknown,
     @CurrentOrg() orgId: string,
   ) {
@@ -55,15 +58,15 @@ export class KnowledgeBaseController {
 
   @Delete(':id')
   @Roles('owner', 'admin')
-  remove(@Param('id') id: string, @CurrentOrg() orgId: string) {
+  remove(@Param('id', UuidValidationPipe) id: string, @CurrentOrg() orgId: string) {
     return this.kbService.remove(id, orgId);
   }
 
   @Post(':id/documents')
   @Roles('owner', 'admin')
   addDocument(
-    @Param('id') id: string,
-    @Body() body: { name: string; source_url: string; mime_type?: string; size_bytes?: number },
+    @Param('id', UuidValidationPipe) id: string,
+    @Body(new ZodValidationPipe(addDocumentSchema)) body: AddDocumentDto,
     @CurrentOrg() orgId: string,
   ) {
     return this.kbService.addDocument(id, orgId, body);
@@ -72,7 +75,7 @@ export class KnowledgeBaseController {
   @Delete(':kbId/documents/:docId')
   @Roles('owner', 'admin')
   removeDocument(
-    @Param('docId') docId: string,
+    @Param('docId', UuidValidationPipe) docId: string,
     @CurrentOrg() orgId: string,
   ) {
     return this.kbService.removeDocument(docId, orgId);

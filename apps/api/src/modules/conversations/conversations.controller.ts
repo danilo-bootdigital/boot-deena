@@ -1,7 +1,14 @@
-import { Controller, Get, Post, Param, Query, Body, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { z } from 'zod';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
+import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { ConversationsService } from './conversations.service';
+
+const sendMessageSchema = z.object({
+  content: z.string().min(1).max(5000).transform((v) => v.trim()),
+});
 
 @Controller('conversations')
 @UseGuards(SupabaseAuthGuard)
@@ -18,19 +25,19 @@ export class ConversationsController {
   }
 
   @Get(':id/messages')
-  getMessages(@Param('id') id: string, @CurrentOrg() orgId: string) {
+  getMessages(
+    @Param('id', UuidValidationPipe) id: string,
+    @CurrentOrg() orgId: string,
+  ) {
     return this.conversationsService.getMessages(id, orgId);
   }
 
   @Post(':id/messages')
   sendMessage(
-    @Param('id') id: string,
-    @Body() body: { content: string },
+    @Param('id', UuidValidationPipe) id: string,
+    @Body(new ZodValidationPipe(sendMessageSchema)) body: { content: string },
     @CurrentOrg() orgId: string,
   ) {
-    if (!body.content || typeof body.content !== 'string' || !body.content.trim()) {
-      throw new BadRequestException('content is required and must be a non-empty string');
-    }
-    return this.conversationsService.sendMessage(id, orgId, body.content.trim());
+    return this.conversationsService.sendMessage(id, orgId, body.content);
   }
 }
