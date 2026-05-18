@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
@@ -19,6 +20,7 @@ interface Agent {
 }
 
 export default function AgentsPage() {
+  const router = useRouter();
   const { session } = useAuth();
   const { currentOrg, loading: orgLoading, error: orgError, retry: retryOrg } = useOrganization();
   const { data: agents, mutate } = useApi<Agent[]>('/agents', currentOrg?.id);
@@ -146,20 +148,56 @@ export default function AgentsPage() {
 
       {agents && agents.length > 0 ? (
         <div className="grid gap-4">
-          {agents.map((agent) => (
-            <Card key={agent.id}>
-              <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{agent.name}</h3>
-                    {agent.description && <p className="text-sm text-gray-500">{agent.description}</p>}
-                    <p className="text-xs text-gray-400 mt-1">{agent.provider} / {agent.model}</p>
+          {agents.map((agent) => {
+            const statusColors: Record<string, string> = {
+              active: 'bg-green-100 text-green-700',
+              inactive: 'bg-gray-100 text-gray-600',
+              draft: 'bg-yellow-100 text-yellow-700',
+            };
+            const statusLabels: Record<string, string> = {
+              active: 'Ativo',
+              inactive: 'Inativo',
+              draft: 'Rascunho',
+            };
+            const status = agent.status || 'draft';
+
+            return (
+              <Card key={agent.id}>
+                <CardContent className="py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-medium text-gray-900">{agent.name}</h3>
+                        <span className={`px-2 py-0.5 text-xs rounded-full ${statusColors[status]}`}>
+                          {statusLabels[status] || status}
+                        </span>
+                      </div>
+                      {agent.description && <p className="text-sm text-gray-500 mt-1">{agent.description}</p>}
+                      <p className="text-xs text-gray-400 mt-1">{agent.provider} / {agent.model}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="danger" onClick={async () => {
+                        if (!confirm('Tem certeza que deseja excluir este agente?')) return;
+                        try {
+                          await api(`/agents/${agent.id}`, {
+                            method: 'DELETE',
+                            token: session!.access_token,
+                            orgId: currentOrg!.id,
+                          });
+                          mutate();
+                        } catch {}
+                      }}>
+                        Excluir
+                      </Button>
+                    </div>
                   </div>
-                  <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Ativo</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : !showForm && (
         <Card>
