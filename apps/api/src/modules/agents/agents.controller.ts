@@ -41,4 +41,13 @@ export class AgentsController {
   remove(@Param('id') id: string, @CurrentOrg() orgId: string) {
     return this.agentsService.remove(id, orgId);
   }
+
+  @Post(':id/chat')
+  chat(
+    @Param('id') id: string,
+    @Body() body: { message: string; history?: Array<{ role: string; content: string }> },
+    @CurrentOrg() orgId: string,
+  ) {
+    return this.agentsService.chat(id, orgId, body.message, body.history || []);
+  }
 }

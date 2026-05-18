@@ -9,6 +9,7 @@
     "lint": "eslint \"{src,test}/**/*.ts\""
   },
   "dependencies": {
+    "@agente-ia/ai": "workspace:^",
     "@agente-ia/database": "workspace:*",
     "@agente-ia/shared": "workspace:*",
     "@nestjs/bullmq": "^10.2.0",

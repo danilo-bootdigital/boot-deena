@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { FlowEditor } from '@/components/flow-editor';
+import { ChatTest } from '@/components/chat-test/chat-test';
 import { useAuth } from '@/hooks/use-auth';
 import { useOrganization } from '@/hooks/use-organization';
 import { api } from '@/lib/api';
@@ -24,7 +25,7 @@ interface Agent {
   updated_at: string;
 }
 
-type Tab = 'flow' | 'config' | 'prompt' | 'status';
+type Tab = 'flow' | 'test' | 'config' | 'prompt' | 'status';
 
 export default function AgentEditPage() {
   const params = useParams();
@@ -130,6 +131,7 @@ export default function AgentEditPage() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'flow', label: 'Fluxo' },
+    { key: 'test', label: 'Testar' },
     { key: 'config', label: 'Configurações' },
     { key: 'prompt', label: 'Prompt do Sistema' },
     { key: 'status', label: 'Status' },
@@ -215,6 +217,19 @@ export default function AgentEditPage() {
               }
             }}
             saving={saving}
+          />
+        </div>
+      )}
+
+      {activeTab === 'test' && (
+        <div>
+          <p className="text-sm text-gray-500 mb-3">
+            Simule uma conversa com o agente para testar o comportamento. O histórico não é salvo.
+          </p>
+          <ChatTest
+            agentId={params.id as string}
+            token={session!.access_token}
+            orgId={currentOrg!.id}
           />
         </div>
       )}

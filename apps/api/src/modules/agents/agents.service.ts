@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createSupabaseAdmin } from '@agente-ia/database';
+import { generate } from '@agente-ia/ai';
 import type { CreateAgentDto, UpdateAgentDto } from './dto/create-agent.dto';
 
 @Injectable()
@@ -70,5 +71,33 @@ export class AgentsService {
 
     if (error) throw error;
     return { deleted: true };
+  }
+
+  async chat(id: string, organizationId: string, message: string, history: Array<{ role: string; content: string }>) {
+    const agent = await this.findOne(id, organizationId);
+
+    const agentConfig = {
+      id: agent.id,
+      organizationId: agent.organization_id,
+      name: agent.name,
+      systemPrompt: agent.system_prompt,
+      provider: agent.provider,
+      model: agent.model,
+      temperature: Number(agent.temperature),
+      maxTokens: agent.max_tokens,
+      settings: agent.settings || {},
+    };
+
+    const result = await generate({
+      agent: agentConfig,
+      messages: history as any,
+      userMessage: message,
+    });
+
+    return {
+      content: result.content,
+      tokensInput: result.tokensInput,
+      tokensOutput: result.tokensOutput,
+    };
   }
 }

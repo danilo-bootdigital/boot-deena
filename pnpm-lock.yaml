@@ -23,6 +23,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@agente-ia/ai':
+        specifier: workspace:^
+        version: link:../../packages/ai
       '@agente-ia/database':
         specifier: workspace:*
         version: link:../../packages/database

@@ -16,6 +16,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { nodeTypes } from './nodes';
 import { NodeEditorPanel } from './node-editor-panel';
+import { flowTemplates } from './templates';
 import { Button } from '@/components/ui/button';
 
 interface FlowEditorProps {
@@ -38,8 +39,18 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [showTemplates, setShowTemplates] = useState(false);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
+
+  const loadTemplate = useCallback((templateId: string) => {
+    const template = flowTemplates.find((t) => t.id === templateId);
+    if (template) {
+      setNodes(template.nodes);
+      setEdges(template.edges);
+      setShowTemplates(false);
+    }
+  }, [setNodes, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#6b7280' } }, eds)),
@@ -97,6 +108,9 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
           </button>
         ))}
         <div className="flex-1" />
+        <Button size="sm" variant="secondary" onClick={() => setShowTemplates(!showTemplates)}>
+          📋 Templates
+        </Button>
         {selectedNode && (
           <Button size="sm" variant="danger" onClick={deleteSelected}>
             Excluir Nó
@@ -108,6 +122,25 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
           </Button>
         )}
       </div>
+
+      {/* Templates Panel */}
+      {showTemplates && (
+        <div className="p-3 bg-white border-b border-gray-200 space-y-2">
+          <p className="text-xs font-medium text-gray-500 uppercase">Carregar template pronto:</p>
+          <div className="flex gap-2 flex-wrap">
+            {flowTemplates.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => loadTemplate(t.id)}
+                className="px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
+              >
+                <span className="font-medium text-gray-800">{t.name}</span>
+                <span className="block text-gray-500 mt-0.5">{t.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Canvas */}
       <div className="flex-1 relative" ref={reactFlowWrapper}>

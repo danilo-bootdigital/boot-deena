@@ -6,6 +6,7 @@ import { ConversationResolverService } from '../services/conversation-resolver.s
 import { MessageStoreService } from '../services/message-store.service';
 import { EvolutionSenderService } from '../services/evolution-sender.service';
 import { AgentLoaderService } from '../services/agent-loader.service';
+import { FlowEngineService } from '../services/flow/flow-engine.service';
 
 interface InboundMessageJob {
   instanceName: string;
@@ -14,6 +15,20 @@ interface InboundMessageJob {
   pushName?: string;
   message: { type: string; content: string };
   timestamp?: number;
+}
+
+interface FlowNode {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: Record<string, any>;
+}
+
+interface FlowEdge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
 }
 
 @Processor('inbound-messages', {
@@ -28,6 +43,7 @@ export class InboundMessageProcessor extends WorkerHost {
     private messageStore: MessageStoreService,
     private evolutionSender: EvolutionSenderService,
     private agentLoader: AgentLoaderService,
+    private flowEngine: FlowEngineService,
   ) {
     super();
   }
@@ -49,23 +65,45 @@ export class InboundMessageProcessor extends WorkerHost {
       });
 
       const agent = await this.agentLoader.load(resolved.agentId);
-      const history = await this.messageStore.getConversationHistory(resolved.conversationId);
 
-      const aiResponse = await generate({
-        agent,
-        messages: history as any,
-        userMessage: message.content,
-      });
+      // Try visual flow first
+      let responseContent: string | undefined;
+      let tokensInput = 0;
+      let tokensOutput = 0;
+
+      const flowData = agent.settings as any;
+      if (flowData?.flow?.nodes?.length > 0) {
+        const flowResult = await this.executeVisualFlow(flowData.flow, message.content, resolved);
+        if (flowResult?.response) {
+          responseContent = flowResult.response;
+        }
+        if (flowResult?.handoff) {
+          responseContent = 'Vou encaminhar sua conversa para nossa equipe dar continuidade com mais segurança.';
+        }
+      }
+
+      // Fallback to AI with system prompt
+      if (!responseContent) {
+        const history = await this.messageStore.getConversationHistory(resolved.conversationId);
+        const aiResponse = await generate({
+          agent,
+          messages: history as any,
+          userMessage: message.content,
+        });
+        responseContent = aiResponse.content;
+        tokensInput = aiResponse.tokensInput;
+        tokensOutput = aiResponse.tokensOutput;
+      }
 
       await this.messageStore.saveAssistantMessage({
         conversationId: resolved.conversationId,
         organizationId: resolved.organizationId,
-        content: aiResponse.content,
-        tokensInput: aiResponse.tokensInput,
-        tokensOutput: aiResponse.tokensOutput,
+        content: responseContent,
+        tokensInput,
+        tokensOutput,
       });
 
-      await this.evolutionSender.sendText(instanceName, remoteJid, aiResponse.content);
+      await this.evolutionSender.sendText(instanceName, remoteJid, responseContent);
       await this.messageStore.updateLastMessageAt(resolved.conversationId);
 
       this.logger.log(`Message processed successfully: ${messageId}`);
@@ -75,5 +113,52 @@ export class InboundMessageProcessor extends WorkerHost {
       );
       throw error;
     }
+  }
+
+  private async executeVisualFlow(
+    flow: { nodes: FlowNode[]; edges: FlowEdge[] },
+    userMessage: string,
+    resolved: { conversationId: string; organizationId: string; agentId: string },
+  ) {
+    const { nodes, edges } = flow;
+    if (!nodes || nodes.length === 0) return null;
+
+    // Convert React Flow format to flow_steps format
+    const steps = nodes
+      .sort((a, b) => a.position.y - b.position.y)
+      .map((node, index) => {
+        const outEdges = edges.filter((e) => e.source === node.id);
+        const nextEdge = outEdges.find((e) => !e.sourceHandle || e.sourceHandle === 'true');
+        const falseEdge = outEdges.find((e) => e.sourceHandle === 'false');
+
+        return {
+          id: node.id,
+          type: node.type || 'message',
+          position: index,
+          config: {
+            message: node.data?.message,
+            label: node.data?.label,
+            field: node.data?.field,
+            operator: node.data?.operator,
+            value: node.data?.value,
+            reason: node.data?.reason,
+            variable_name: node.data?.variable_name,
+            endpoint_url: node.data?.endpoint_url,
+          },
+          next_step_id: nextEdge?.target || null,
+          condition_true_step_id: node.type === 'condition' ? nextEdge?.target || null : null,
+          condition_false_step_id: node.type === 'condition' ? falseEdge?.target || null : null,
+        };
+      });
+
+    const context = {
+      conversationId: resolved.conversationId,
+      organizationId: resolved.organizationId,
+      agentId: resolved.agentId,
+      userMessage,
+      variables: {},
+    };
+
+    return this.flowEngine.executeFlow(steps, context);
   }
 }
