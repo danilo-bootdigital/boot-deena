@@ -43,7 +43,7 @@ export class WebhookService {
 
   private extractMessageContent(
     message: Record<string, unknown> | undefined,
-  ): { type: string; content: string } {
+  ): { type: string; content: string; mediaUrl?: string; mimetype?: string } {
     if (!message) return { type: 'text', content: '' };
 
     if (message.conversation) {
@@ -58,7 +58,8 @@ export class WebhookService {
       return { type: 'image', content: (img.caption as string) || '' };
     }
     if (message.audioMessage) {
-      return { type: 'audio', content: '' };
+      const audio = message.audioMessage as Record<string, unknown>;
+      return { type: 'audio', content: '', mediaUrl: (audio.url as string) || '', mimetype: (audio.mimetype as string) || 'audio/ogg' };
     }
     if (message.documentMessage) {
       const doc = message.documentMessage as Record<string, unknown>;

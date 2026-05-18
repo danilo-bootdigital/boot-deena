@@ -17,7 +17,7 @@ export class AgentLoaderService {
   async load(agentId: string): Promise<AgentConfig> {
     const { data, error } = await this.supabase
       .from('agents')
-      .select('id, organization_id, name, system_prompt, provider, model, temperature, max_tokens, settings')
+      .select('id, organization_id, name, system_prompt, provider, model, temperature, max_tokens, settings, voice_enabled, voice_id')
       .eq('id', agentId)
       .single();
 
@@ -34,7 +34,11 @@ export class AgentLoaderService {
       model: data.model,
       temperature: Number(data.temperature),
       maxTokens: data.max_tokens,
-      settings: data.settings || {},
+      settings: {
+        ...(data.settings || {}),
+        voice_enabled: data.voice_enabled,
+        voice_id: data.voice_id,
+      },
     };
   }
 }

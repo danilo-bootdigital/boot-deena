@@ -8,7 +8,7 @@ export interface InboundMessageJob {
   remoteJid: string;
   messageId: string;
   pushName?: string;
-  message: { type: string; content: string };
+  message: { type: string; content: string; mediaUrl?: string; mimetype?: string };
   timestamp?: number;
 }
 

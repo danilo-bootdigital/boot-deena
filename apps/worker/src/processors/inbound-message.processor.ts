@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import { createSupabaseAdmin } from '@agente-ia/database';
-import { generate } from '@agente-ia/ai';
+import { generate, transcribeAudio, textToSpeech } from '@agente-ia/ai';
 import { ConversationResolverService } from '../services/conversation-resolver.service';
 import { MessageStoreService } from '../services/message-store.service';
 import { EvolutionSenderService } from '../services/evolution-sender.service';
@@ -15,7 +15,7 @@ interface InboundMessageJob {
   remoteJid: string;
   messageId: string;
   pushName?: string;
-  message: { type: string; content: string };
+  message: { type: string; content: string; mediaUrl?: string; mimetype?: string };
   timestamp?: number;
 }
 
@@ -72,10 +72,24 @@ export class InboundMessageProcessor extends WorkerHost {
         .eq('status', 'pending')
         .in('message_type', ['follow_up_1h', 'follow_up_24h', 'follow_up_3d']);
 
+      // Se for áudio, transcrever primeiro
+      let messageContent = message.content;
+      if (message.type === 'audio') {
+        try {
+          const media = await this.evolutionSender.downloadMedia(instanceName, messageId);
+          const audioBuffer = Buffer.from(media.base64, 'base64');
+          messageContent = await transcribeAudio(audioBuffer, media.mimetype);
+          this.logger.log(`Audio transcribed: "${messageContent.slice(0, 100)}..."`);
+        } catch (err) {
+          this.logger.error(`Failed to transcribe audio: ${(err as Error).message}`);
+          messageContent = '[Áudio não transcrito]';
+        }
+      }
+
       await this.messageStore.saveUserMessage({
         conversationId: resolved.conversationId,
         organizationId: resolved.organizationId,
-        content: message.content,
+        content: messageContent,
         type: message.type,
         whatsappMessageId: messageId,
       });
@@ -89,7 +103,7 @@ export class InboundMessageProcessor extends WorkerHost {
 
       const flowData = agent.settings as any;
       if (flowData?.flow?.nodes?.length > 0) {
-        const flowResult = await this.executeVisualFlow(flowData.flow, message.content, resolved);
+        const flowResult = await this.executeVisualFlow(flowData.flow, messageContent, resolved);
         if (flowResult?.response) {
           responseContent = flowResult.response;
         }
@@ -104,7 +118,7 @@ export class InboundMessageProcessor extends WorkerHost {
         const aiResponse = await generate({
           agent,
           messages: history as any,
-          userMessage: message.content,
+          userMessage: messageContent,
         });
         responseContent = aiResponse.content;
         tokensInput = aiResponse.tokensInput;
@@ -119,7 +133,22 @@ export class InboundMessageProcessor extends WorkerHost {
         tokensOutput,
       });
 
-      await this.evolutionSender.sendText(instanceName, remoteJid, responseContent);
+      // Enviar resposta: áudio (TTS) ou texto
+      const voiceEnabled = (agent.settings as any)?.voice_enabled === true;
+      if (voiceEnabled && responseContent.length <= 4096) {
+        try {
+          const voiceId = (agent.settings as any)?.voice_id || 'nova';
+          const audioBuffer = await textToSpeech(responseContent, voiceId);
+          const audioBase64 = audioBuffer.toString('base64');
+          await this.evolutionSender.sendAudio(instanceName, remoteJid, audioBase64);
+        } catch (err) {
+          this.logger.warn(`TTS failed, falling back to text: ${(err as Error).message}`);
+          await this.evolutionSender.sendText(instanceName, remoteJid, responseContent);
+        }
+      } else {
+        await this.evolutionSender.sendText(instanceName, remoteJid, responseContent);
+      }
+
       await this.messageStore.updateLastMessageAt(resolved.conversationId);
 
       this.logger.log(`Message processed successfully: ${messageId}`);

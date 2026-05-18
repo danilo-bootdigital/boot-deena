@@ -8,5 +8,8 @@ export { applySlidingWindow } from './memory/sliding-window';
 export { estimateTokens, estimateMessagesTokens } from './memory/token-counter';
 export { generateEmbedding, generateEmbeddings } from './rag/embeddings';
 export { chunkText } from './rag/chunker';
+export { transcribeAudio } from './audio/transcribe';
+export { textToSpeech } from './audio/text-to-speech';
+export type { VoiceId } from './audio/text-to-speech';
 export type { Chunk, ChunkOptions } from './rag/chunker';
 export type * from './types';

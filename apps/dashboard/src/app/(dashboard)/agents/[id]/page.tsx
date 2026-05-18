@@ -52,6 +52,8 @@ export default function AgentEditPage() {
     temperature: 0.7,
     max_tokens: 1024,
     status: 'draft',
+    voice_enabled: false,
+    voice_id: 'nova',
   });
 
   useEffect(() => {
@@ -75,6 +77,8 @@ export default function AgentEditPage() {
         temperature: Number(data.temperature),
         max_tokens: data.max_tokens,
         status: data.status || 'draft',
+        voice_enabled: (data as any).voice_enabled || false,
+        voice_id: (data as any).voice_id || 'nova',
       });
       // Load flow from settings
       if (data.settings?.flow) {
@@ -318,6 +322,43 @@ export default function AgentEditPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-400">Tamanho máximo da resposta</p>
+                </div>
+              </div>
+
+              {/* Configurações de Voz */}
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">🎙️ Resposta por Voz (TTS)</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.voice_enabled}
+                      onChange={(e) => setForm({ ...form, voice_enabled: e.target.checked })}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Responder com áudio</span>
+                      <p className="text-xs text-gray-400">O agente envia a resposta como mensagem de voz no WhatsApp</p>
+                    </div>
+                  </label>
+                  {form.voice_enabled && (
+                    <div className="space-y-1 ml-7">
+                      <label className="block text-sm font-medium text-gray-700">Voz</label>
+                      <select
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        value={form.voice_id}
+                        onChange={(e) => setForm({ ...form, voice_id: e.target.value })}
+                      >
+                        <option value="nova">Nova (feminina, natural)</option>
+                        <option value="alloy">Alloy (neutra)</option>
+                        <option value="echo">Echo (masculina)</option>
+                        <option value="fable">Fable (narrativa)</option>
+                        <option value="onyx">Onyx (masculina, grave)</option>
+                        <option value="shimmer">Shimmer (feminina, suave)</option>
+                      </select>
+                      <p className="text-xs text-gray-400">Áudios recebidos são sempre transcritos automaticamente, independente desta opção.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
