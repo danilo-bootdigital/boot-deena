@@ -31,6 +31,7 @@ const nodeTemplates = [
   { type: 'condition', label: '⚡ Condição', data: { label: '', field: 'user_message', operator: 'contains', value: '' } },
   { type: 'wait', label: '⏳ Aguardar', data: { label: 'Aguardando resposta' } },
   { type: 'set_variable', label: '📝 Salvar Dado', data: { variable_name: '', value: '' } },
+  { type: 'schedule_message', label: '⏰ Agendar Msg', data: { delay_minutes: 60, message_type: 'follow_up_1h', message: '' } },
   { type: 'tool_call', label: '🔧 Ação / API', data: { label: '' } },
   { type: 'handoff', label: '🙋 Transferir', data: { reason: '' } },
 ];

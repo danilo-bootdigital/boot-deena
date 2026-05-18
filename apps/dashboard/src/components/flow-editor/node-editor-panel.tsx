@@ -135,6 +135,45 @@ export function NodeEditorPanel({ node, onUpdate, onClose }: NodeEditorPanelProp
             />
           </>
         )}
+
+        {node.type === 'schedule_message' && (
+          <>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">Tipo de agendamento</label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                value={node.data.message_type || 'follow_up_1h'}
+                onChange={(e) => updateData('message_type', e.target.value)}
+              >
+                <option value="follow_up_1h">Follow-up (1 hora)</option>
+                <option value="follow_up_24h">Follow-up (24 horas)</option>
+                <option value="follow_up_3d">Follow-up (3 dias)</option>
+                <option value="confirmation_24h">Confirmação (24h antes)</option>
+                <option value="no_show">No-show (não compareceu)</option>
+                <option value="post_consultation">Pós-consulta</option>
+                <option value="reactivation">Reativação</option>
+                <option value="custom">Personalizado</option>
+              </select>
+            </div>
+            <Input
+              label="Atraso (em minutos)"
+              type="number"
+              value={node.data.delay_minutes || 60}
+              onChange={(e) => updateData('delay_minutes', parseInt(e.target.value) || 60)}
+              placeholder="60 = 1h, 1440 = 1 dia"
+            />
+            <div className="text-xs text-gray-400">
+              <p>60 = 1 hora | 1440 = 1 dia | 4320 = 3 dias</p>
+            </div>
+            <Textarea
+              label="Mensagem a enviar"
+              value={node.data.message || ''}
+              onChange={(e) => updateData('message', e.target.value)}
+              rows={3}
+              placeholder="Use {{nome}}, {{especialidade}}, etc."
+            />
+          </>
+        )}
       </div>
     </div>
   );

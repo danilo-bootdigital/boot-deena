@@ -124,6 +124,41 @@ export class FlowEngineService {
           return { matched: true, handoff: true, handoffReason: reason };
         }
 
+        case 'schedule_message': {
+          // Agendar mensagem para envio futuro
+          const delayMinutes = Number(currentStep.config.delay_minutes) || 60;
+          const msgType = (currentStep.config.message_type as string) || 'custom';
+          const msgContent = (currentStep.config.message as string) || '';
+          const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000).toISOString();
+
+          // Buscar dados da conversa para agendar
+          const { data: conversation } = await this.supabase
+            .from('conversations')
+            .select('contact_phone, instance_name')
+            .eq('id', context.conversationId)
+            .single();
+
+          if (conversation) {
+            await this.supabase
+              .from('scheduled_messages')
+              .insert({
+                organization_id: context.organizationId,
+                conversation_id: context.conversationId,
+                agent_id: context.agentId,
+                contact_phone: conversation.contact_phone,
+                instance_name: conversation.instance_name,
+                message_type: msgType,
+                content: this.interpolateVariables(msgContent, context.variables),
+                variables: context.variables,
+                scheduled_for: scheduledFor,
+                status: 'pending',
+              });
+          }
+
+          currentStep = this.getNextStep(steps, currentStep.next_step_id);
+          break;
+        }
+
         case 'wait': {
           // Wait step ends flow execution, response sent so far
           return { matched: true, response: response.trim() || undefined };

@@ -6,6 +6,7 @@ import { QUEUES } from '@agente-ia/shared';
 import { InboundMessageProcessor } from './processors/inbound-message.processor';
 import { OutboundMessageProcessor } from './processors/outbound-message.processor';
 import { RagProcessor } from './processors/rag.processor';
+import { ScheduledMessageProcessor } from './processors/scheduled-message.processor';
 import { ConversationResolverService } from './services/conversation-resolver.service';
 import { MessageStoreService } from './services/message-store.service';
 import { EvolutionSenderService } from './services/evolution-sender.service';
@@ -42,12 +43,14 @@ import { workerConfig } from './config/worker.config';
       { name: QUEUES.INBOUND },
       { name: QUEUES.OUTBOUND },
       { name: QUEUES.RAG },
+      { name: QUEUES.SCHEDULED },
     ),
   ],
   providers: [
     InboundMessageProcessor,
     OutboundMessageProcessor,
     RagProcessor,
+    ScheduledMessageProcessor,
     ConversationResolverService,
     MessageStoreService,
     EvolutionSenderService,

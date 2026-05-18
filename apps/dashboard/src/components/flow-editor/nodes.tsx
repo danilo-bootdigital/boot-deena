@@ -83,6 +83,28 @@ export const SetVariableNode = memo(({ data, selected }: NodeProps) => (
 ));
 SetVariableNode.displayName = 'SetVariableNode';
 
+export const ScheduleMessageNode = memo(({ data, selected }: NodeProps) => {
+  const delayLabel = data.delay_minutes >= 1440
+    ? `${Math.round(data.delay_minutes / 1440)}d`
+    : data.delay_minutes >= 60
+    ? `${Math.round(data.delay_minutes / 60)}h`
+    : `${data.delay_minutes}min`;
+
+  return (
+    <div className={`${baseStyle} bg-orange-50 ${selected ? 'border-orange-500' : 'border-orange-200'}`}>
+      <Handle type="target" position={Position.Top} className="!bg-orange-500" />
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-orange-600 text-lg">⏰</span>
+        <span className="text-xs font-semibold text-orange-700 uppercase">Agendar Mensagem</span>
+        <span className="text-xs bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded">{delayLabel}</span>
+      </div>
+      <p className="text-sm text-gray-700 line-clamp-2">{data.message || 'Mensagem agendada...'}</p>
+      <Handle type="source" position={Position.Bottom} className="!bg-orange-500" />
+    </div>
+  );
+});
+ScheduleMessageNode.displayName = 'ScheduleMessageNode';
+
 export const nodeTypes = {
   message: MessageNode,
   condition: ConditionNode,
@@ -90,4 +112,5 @@ export const nodeTypes = {
   wait: WaitNode,
   tool_call: ToolCallNode,
   set_variable: SetVariableNode,
+  schedule_message: ScheduleMessageNode,
 };
