@@ -131,15 +131,34 @@ export class OrganizationsService {
       throw new ConflictException('User is already a member');
     }
 
+    const allAgents = dto.role === 'admin' ? true : (dto.all_agents || false);
+
     const { error } = await this.supabase
       .from('org_members')
       .insert({
         organization_id: organizationId,
         user_id: userId,
         role: dto.role,
+        all_agents: allAgents,
       });
 
     if (error) throw error;
+
+    // Se não tem acesso a todos e foram especificados agentes, vincular
+    if (!allAgents && dto.agent_ids && dto.agent_ids.length > 0) {
+      const agentMembers = dto.agent_ids.map((agentId) => ({
+        agent_id: agentId,
+        user_id: userId!,
+        permission: dto.role === 'manager' ? 'manage' : 'view',
+        role_type: dto.role === 'manager' ? 'manager' : 'team',
+        assigned_by: null,
+      }));
+
+      await this.supabase
+        .from('agent_members')
+        .upsert(agentMembers, { onConflict: 'agent_id,user_id' });
+    }
+
     return { invited: true, userId };
   }
 

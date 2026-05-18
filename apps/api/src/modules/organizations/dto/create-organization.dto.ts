@@ -9,7 +9,9 @@ export const updateOrganizationSchema = createOrganizationSchema.partial();
 
 export const inviteMemberSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['admin', 'member', 'viewer']).default('member'),
+  role: z.enum(['admin', 'manager', 'operator']).default('operator'),
+  all_agents: z.boolean().default(false),
+  agent_ids: z.array(z.string().uuid()).optional(),
 });
 
 export type CreateOrganizationDto = z.infer<typeof createOrganizationSchema>;

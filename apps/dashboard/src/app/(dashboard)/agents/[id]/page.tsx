@@ -146,7 +146,13 @@ export default function AgentEditPage() {
           <button onClick={() => router.push('/agents')} className="text-gray-500 hover:text-gray-700">
             ← Voltar
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">{form.name || 'Editar Agente'}</h1>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="text-2xl font-bold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none px-1 py-0.5 transition-colors"
+            placeholder="Nome do Agente"
+          />
         </div>
         <div className="flex gap-2">
           <Button variant="danger" size="sm" onClick={() => setShowDeleteConfirm(true)}>

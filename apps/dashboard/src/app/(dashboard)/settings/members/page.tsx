@@ -16,40 +16,54 @@ interface Member {
   role: string;
 }
 
+interface Agent {
+  id: string;
+  name: string;
+  status: string;
+}
+
 const ROLE_LABELS: Record<string, string> = {
-  owner: 'Proprietário',
+  owner: 'Administrador',
   admin: 'Administrador',
-  member: 'Membro',
-  viewer: 'Visualizador',
+  manager: 'Gerente de Conta',
+  operator: 'Operador/Atendente',
 };
 
 const ROLE_COLORS: Record<string, string> = {
   owner: 'bg-purple-100 text-purple-800',
-  admin: 'bg-blue-100 text-blue-800',
-  member: 'bg-green-100 text-green-800',
-  viewer: 'bg-gray-100 text-gray-800',
+  admin: 'bg-purple-100 text-purple-800',
+  manager: 'bg-blue-100 text-blue-800',
+  operator: 'bg-green-100 text-green-800',
 };
 
 export default function MembersPage() {
   const { currentOrg } = useOrganization();
   const api = useApiClient();
   const [members, setMembers] = useState<Member[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('member');
+  const [inviteRole, setInviteRole] = useState('operator');
+  const [allAgents, setAllAgents] = useState(false);
+  const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [inviting, setInviting] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (currentOrg?.id) loadMembers();
+    if (currentOrg?.id) loadData();
   }, [currentOrg?.id]);
 
-  async function loadMembers() {
+  async function loadData() {
     try {
-      const data = await api.get<Member[]>('/profiles/organization');
-      setMembers(data);
+      const [membersData, agentsData] = await Promise.all([
+        api.get<Member[]>('/profiles/organization'),
+        api.get<Agent[]>('/agents'),
+      ]);
+      setMembers(membersData);
+      setAgents(agentsData);
     } catch {
       setMembers([]);
+      setAgents([]);
     } finally {
       setLoading(false);
     }
@@ -65,10 +79,14 @@ export default function MembersPage() {
       await api.post(`/organizations/${currentOrg.id}/members`, {
         email: inviteEmail,
         role: inviteRole,
+        all_agents: inviteRole === 'admin' ? true : allAgents,
+        agent_ids: (!allAgents && inviteRole !== 'admin') ? selectedAgentIds : undefined,
       });
       setMessage('Membro convidado com sucesso!');
       setInviteEmail('');
-      loadMembers();
+      setSelectedAgentIds([]);
+      setAllAgents(false);
+      loadData();
     } catch (err: any) {
       setMessage(err?.message || 'Erro ao convidar membro.');
     } finally {
@@ -88,6 +106,14 @@ export default function MembersPage() {
     }
   }
 
+  function toggleAgent(agentId: string) {
+    setSelectedAgentIds((prev) =>
+      prev.includes(agentId)
+        ? prev.filter((id) => id !== agentId)
+        : [...prev, agentId],
+    );
+  }
+
   if (loading) {
     return <div className="p-6 text-gray-500">Carregando membros...</div>;
   }
@@ -100,39 +126,100 @@ export default function MembersPage() {
         <CardHeader>
           <h2 className="text-lg font-semibold">Convidar Novo Membro</h2>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleInvite} className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-              <Input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="email@exemplo.com"
-                required
-              />
+        <CardContent className="space-y-4">
+          <form onSubmit={handleInvite} className="space-y-4">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <Input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+              <div className="w-48">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nível de Acesso</label>
+                <select
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={inviteRole}
+                  onChange={(e) => {
+                    setInviteRole(e.target.value);
+                    if (e.target.value === 'admin') setAllAgents(true);
+                  }}
+                >
+                  <option value="admin">Administrador</option>
+                  <option value="manager">Gerente de Conta</option>
+                  <option value="operator">Operador/Atendente</option>
+                </select>
+              </div>
             </div>
-            <div className="w-40">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nível</label>
-              <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value)}
-              >
-                <option value="admin">Administrador</option>
-                <option value="member">Membro</option>
-                <option value="viewer">Visualizador</option>
-              </select>
-            </div>
+
+            {inviteRole !== 'admin' && (
+              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Acesso a Agentes
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={allAgents}
+                      onChange={() => setAllAgents(true)}
+                      className="text-blue-600"
+                    />
+                    Todos os agentes
+                  </label>
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={!allAgents}
+                      onChange={() => setAllAgents(false)}
+                      className="text-blue-600"
+                    />
+                    Agentes específicos
+                  </label>
+                </div>
+
+                {!allAgents && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                    {agents.map((agent) => (
+                      <label
+                        key={agent.id}
+                        className={`flex items-center gap-2 p-2 rounded border text-sm cursor-pointer transition-colors ${
+                          selectedAgentIds.includes(agent.id)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedAgentIds.includes(agent.id)}
+                          onChange={() => toggleAgent(agent.id)}
+                          className="rounded border-gray-300 text-blue-600"
+                        />
+                        <span className="truncate">{agent.name}</span>
+                      </label>
+                    ))}
+                    {agents.length === 0 && (
+                      <p className="text-xs text-gray-400 col-span-full">Nenhum agente criado.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {message && (
+              <p className={`text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
+                {message}
+              </p>
+            )}
+
             <Button type="submit" disabled={inviting}>
               {inviting ? 'Convidando...' : 'Convidar'}
             </Button>
           </form>
-          {message && (
-            <p className={`mt-3 text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
-              {message}
-            </p>
-          )}
         </CardContent>
       </Card>
 
@@ -158,7 +245,7 @@ export default function MembersPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.role] || ROLE_COLORS.viewer}`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.role] || ROLE_COLORS.operator}`}>
                     {ROLE_LABELS[member.role] || member.role}
                   </span>
                   {member.role !== 'owner' && (
@@ -178,6 +265,12 @@ export default function MembersPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 space-y-2">
+        <p><strong>Administrador:</strong> Acesso total. Visualiza todos os agentes, membros e configurações.</p>
+        <p><strong>Gerente de Conta:</strong> Visualiza e edita apenas os agentes vinculados. Gerencia atendentes dos seus agentes.</p>
+        <p><strong>Operador/Atendente:</strong> Acesso limitado. Responde atendimentos e visualiza conversas dos agentes autorizados.</p>
+      </div>
     </div>
   );
 }

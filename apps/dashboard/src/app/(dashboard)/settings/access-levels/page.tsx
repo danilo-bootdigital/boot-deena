@@ -13,10 +13,10 @@ interface AccessLevel {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  owner: 'Proprietário',
+  owner: 'Administrador (Proprietário)',
   admin: 'Administrador',
-  member: 'Membro',
-  viewer: 'Visualizador',
+  manager: 'Gerente de Conta',
+  operator: 'Operador/Atendente',
 };
 
 const SECTION_LABELS: Record<string, string> = {
@@ -45,7 +45,7 @@ export default function AccessLevelsPage() {
   const api = useApiClient();
   const [levels, setLevels] = useState<AccessLevel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRole, setSelectedRole] = useState<string>('member');
+  const [selectedRole, setSelectedRole] = useState<string>('manager');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -128,8 +128,8 @@ export default function AccessLevelsPage() {
 
       {levels.length > 0 && (
         <>
-          <div className="flex gap-2">
-            {['owner', 'admin', 'member', 'viewer'].map((role) => (
+          <div className="flex gap-2 flex-wrap">
+            {['admin', 'manager', 'operator'].map((role) => (
               <button
                 key={role}
                 onClick={() => setSelectedRole(role)}
@@ -150,6 +150,16 @@ export default function AccessLevelsPage() {
                 <h2 className="text-lg font-semibold">
                   Permissões: {ROLE_LABELS[selectedRole]}
                 </h2>
+                {selectedRole === 'manager' && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    O Gerente de Conta só visualiza agentes vinculados a ele, independente das permissões abaixo.
+                  </p>
+                )}
+                {selectedRole === 'operator' && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    O Operador só acessa agentes autorizados. Não pode editar agentes ou acessar configurações.
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-6">
                 {Object.entries(SECTION_LABELS).map(([section, label]) => {
@@ -186,13 +196,11 @@ export default function AccessLevelsPage() {
                   </p>
                 )}
 
-                {selectedRole !== 'owner' && (
-                  <div className="flex justify-end">
-                    <Button onClick={() => handleSave(selectedRole)} disabled={saving}>
-                      {saving ? 'Salvando...' : 'Salvar Permissões'}
-                    </Button>
-                  </div>
-                )}
+                <div className="flex justify-end">
+                  <Button onClick={() => handleSave(selectedRole)} disabled={saving}>
+                    {saving ? 'Salvando...' : 'Salvar Permissões'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}

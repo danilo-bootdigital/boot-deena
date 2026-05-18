@@ -37,6 +37,13 @@ export default function AgentsPage() {
     max_tokens: 1024,
   });
 
+  const userRole = currentOrg?.role || 'operator';
+  const isAdmin = userRole === 'owner' || userRole === 'admin';
+  const isManager = userRole === 'manager';
+  const canCreate = isAdmin;
+  const canEdit = isAdmin || isManager;
+  const canDelete = isAdmin;
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -64,12 +71,14 @@ export default function AgentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Agentes</h1>
-        <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : 'Novo Agente'}
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancelar' : 'Novo Agente'}
+          </Button>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && canCreate && (
         <Card>
           <CardHeader>
             <p className="text-sm text-gray-500">Criar novo agente de IA</p>
@@ -176,22 +185,31 @@ export default function AgentsPage() {
                       <p className="text-xs text-gray-400 mt-1">{agent.provider} / {agent.model}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
-                        Editar
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={async () => {
-                        if (!confirm('Tem certeza que deseja excluir este agente?')) return;
-                        try {
-                          await api(`/agents/${agent.id}`, {
-                            method: 'DELETE',
-                            token: session!.access_token,
-                            orgId: currentOrg!.id,
-                          });
-                          mutate();
-                        } catch {}
-                      }}>
-                        Excluir
-                      </Button>
+                      {canEdit && (
+                        <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
+                          Editar
+                        </Button>
+                      )}
+                      {!canEdit && (
+                        <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
+                          Visualizar
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button size="sm" variant="danger" onClick={async () => {
+                          if (!confirm('Tem certeza que deseja excluir este agente?')) return;
+                          try {
+                            await api(`/agents/${agent.id}`, {
+                              method: 'DELETE',
+                              token: session!.access_token,
+                              orgId: currentOrg!.id,
+                            });
+                            mutate();
+                          } catch {}
+                        }}>
+                          Excluir
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -204,7 +222,11 @@ export default function AgentsPage() {
           <CardContent>
             <div className="text-center py-12 text-gray-500">
               <p className="text-lg">Nenhum agente criado ainda</p>
-              <p className="text-sm mt-2">Crie seu primeiro agente para começar a atender no WhatsApp</p>
+              <p className="text-sm mt-2">
+                {canCreate
+                  ? 'Crie seu primeiro agente para começar a atender no WhatsApp'
+                  : 'Nenhum agente vinculado ao seu usuário. Solicite acesso ao administrador.'}
+              </p>
             </div>
           </CardContent>
         </Card>

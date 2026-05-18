@@ -217,14 +217,51 @@ Cada usuário possui um perfil com dados complementares que é criado automatica
 
 ## Níveis de Acesso (Permissões)
 
-O sistema possui 4 níveis de acesso na organização, cada um com permissões granulares configuráveis:
+O sistema possui 3 níveis de acesso para membros da organização:
 
 | Nível | Descrição |
 |-------|-----------|
-| **Proprietário (owner)** | Acesso total, não pode ter permissões removidas |
-| **Administrador (admin)** | Gerencia agentes, membros e configurações |
-| **Membro (member)** | Opera agentes e conversas, sem poder criar/excluir |
-| **Visualizador (viewer)** | Apenas visualiza, sem poder intervir |
+| **Administrador** | Acesso total. Visualiza todos os agentes, membros e configurações. Pode criar, editar e excluir agentes. |
+| **Gerente de Conta** | Acesso apenas aos agentes vinculados. Pode editar agentes da sua carteira e gerenciar atendentes vinculados. |
+| **Operador/Atendente** | Acesso limitado. Responde atendimentos e visualiza conversas apenas dos agentes autorizados. |
+
+### Regras de Permissão
+
+**Administrador:**
+- Visualizar todos os usuários cadastrados
+- Visualizar todos os agentes de IA
+- Criar, editar e excluir agentes
+- Gerenciar permissões e níveis de acesso
+- Acessar todos os setores e configurações do sistema
+
+**Gerente de Conta:**
+- Visualizar somente os agentes atribuídos ao seu usuário
+- Editar os agentes que pertencem à sua carteira
+- Gerenciar atendentes vinculados aos seus agentes
+- Visualizar conversas, leads e relatórios apenas dos agentes permitidos
+- NÃO pode visualizar agentes de outros gerentes
+- NÃO pode acessar configurações globais da plataforma
+
+**Operador/Atendente:**
+- Acessar apenas os agentes autorizados
+- Responder atendimentos e visualizar conversas
+- Atualizar status de leads e pipeline
+- NÃO pode editar agentes
+- NÃO pode acessar configurações administrativas
+- NÃO pode visualizar outros usuários da plataforma
+
+### Controle de Visibilidade dos Agentes
+
+Ao convidar um membro, o administrador define:
+- Se o usuário terá acesso a **TODOS** os agentes, OU
+- Se terá acesso apenas a **agentes específicos** (selecionados manualmente)
+
+### Estrutura da Equipe do Agente
+
+Cada agente possui:
+- **Responsável Principal** — dono do agente, controle total
+- **Gerente Vinculado** — gerencia o agente e seus atendentes
+- **Equipe Autorizada** — opera/visualiza conforme permissão definida
 
 **Permissões configuráveis por seção:**
 
@@ -249,6 +286,7 @@ Gerencie quem faz parte da sua organização.
 
 **Funcionalidades:**
 - Convidar novos membros por e-mail com nível de acesso definido
+- Definir acesso a todos os agentes ou agentes específicos
 - Visualizar todos os membros com seus respectivos níveis
 - Remover membros (exceto o proprietário)
 
@@ -257,14 +295,25 @@ Gerencie quem faz parte da sua organização.
 **Como convidar:**
 1. Acesse Configurações → Membros
 2. Preencha o e-mail do usuário
-3. Selecione o nível (Administrador, Membro ou Visualizador)
-4. Clique em "Convidar"
+3. Selecione o nível (Administrador, Gerente de Conta ou Operador/Atendente)
+4. Defina o acesso: "Todos os agentes" ou selecione agentes específicos
+5. Clique em "Convidar"
 
 ---
 
 ## Vinculação de Usuários a Agentes (Equipe do Agente)
 
-Cada agente pode ter uma equipe de usuários vinculados com permissões específicas:
+Cada agente pode ter uma equipe de usuários vinculados com papéis e permissões específicas:
+
+**Papéis na equipe:**
+
+| Papel | Descrição |
+|-------|-----------|
+| **Responsável Principal** | Dono do agente. Controle total sobre configurações e equipe. |
+| **Gerente Vinculado** | Gerencia o agente e seus atendentes. Pode editar configurações. |
+| **Equipe Autorizada** | Pode operar/visualizar o agente conforme a permissão definida. |
+
+**Permissões de acesso:**
 
 | Permissão | O que pode fazer |
 |-----------|-----------------|
@@ -275,10 +324,11 @@ Cada agente pode ter uma equipe de usuários vinculados com permissões específ
 **Como vincular:**
 1. Acesse Agentes → clique no agente → aba "Equipe"
 2. Selecione um membro da organização
-3. Escolha a permissão (Gerenciar, Operar ou Visualizar)
-4. Clique em "Vincular"
+3. Escolha o papel (Responsável, Gerente ou Equipe)
+4. Escolha a permissão (Gerenciar, Operar ou Visualizar)
+5. Clique em "Vincular"
 
-**Como alterar permissão:** Na lista de membros do agente, altere o dropdown de permissão.
+**Como alterar:** Na lista de membros do agente, altere os dropdowns de papel e permissão.
 
 **Como remover:** Clique em "Remover" ao lado do membro.
 

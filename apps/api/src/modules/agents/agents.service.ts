@@ -15,11 +15,34 @@ export class AgentsService {
     );
   }
 
-  async findAll(organizationId: string) {
+  async findAll(organizationId: string, userId: string, userRole: string) {
+    if (userRole === 'owner' || userRole === 'admin') {
+      const { data, error } = await this.supabase
+        .from('agents')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+
+    // Gerente e Operador: apenas agentes vinculados
+    const { data: memberships, error: memError } = await this.supabase
+      .from('agent_members')
+      .select('agent_id')
+      .eq('user_id', userId);
+
+    if (memError) throw memError;
+
+    const agentIds = memberships?.map((m) => m.agent_id) || [];
+    if (agentIds.length === 0) return [];
+
     const { data, error } = await this.supabase
       .from('agents')
       .select('*')
       .eq('organization_id', organizationId)
+      .in('id', agentIds)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { AgentsService } from './agents.service';
@@ -15,8 +16,13 @@ export class AgentsController {
   constructor(private agentsService: AgentsService) {}
 
   @Get()
-  findAll(@CurrentOrg() orgId: string) {
-    return this.agentsService.findAll(orgId);
+  findAll(
+    @CurrentOrg() orgId: string,
+    @CurrentUser('id') userId: string,
+    @Req() req: any,
+  ) {
+    const userRole = req.orgRole || 'operator';
+    return this.agentsService.findAll(orgId, userId, userRole);
   }
 
   @Get(':id')
@@ -34,7 +40,7 @@ export class AgentsController {
   }
 
   @Put(':id')
-  @Roles('owner', 'admin')
+  @Roles('owner', 'admin', 'manager')
   update(
     @Param('id', UuidValidationPipe) id: string,
     @Body(new ZodValidationPipe(updateAgentSchema)) body: unknown,

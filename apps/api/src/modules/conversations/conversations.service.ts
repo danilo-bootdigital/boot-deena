@@ -13,12 +13,35 @@ export class ConversationsService {
     );
   }
 
-  async findAll(organizationId: string, status?: string, search?: string) {
+  private async getAllowedAgentIds(userId: string, userRole: string, organizationId: string): Promise<string[] | null> {
+    if (userRole === 'owner' || userRole === 'admin') {
+      return null; // null = sem filtro, vê tudo
+    }
+
+    const { data } = await this.supabase
+      .from('agent_members')
+      .select('agent_id, agents!inner(organization_id)')
+      .eq('user_id', userId)
+      .eq('agents.organization_id', organizationId);
+
+    return data?.map((m) => m.agent_id) || [];
+  }
+
+  async findAll(organizationId: string, status?: string, search?: string, userId?: string, userRole?: string) {
+    const allowedAgentIds = userId && userRole
+      ? await this.getAllowedAgentIds(userId, userRole, organizationId)
+      : null;
+
     let query = this.supabase
       .from('conversations')
       .select('*, agents(id, name)')
       .eq('organization_id', organizationId)
       .order('last_message_at', { ascending: false, nullsFirst: false });
+
+    if (allowedAgentIds !== null) {
+      if (allowedAgentIds.length === 0) return [];
+      query = query.in('agent_id', allowedAgentIds);
+    }
 
     if (status) {
       query = query.eq('status', status);

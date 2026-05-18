@@ -19,7 +19,7 @@ const settingsItems = [
   {
     href: '/settings/access-levels',
     title: 'Níveis de Acesso',
-    description: 'Configure permissões granulares por nível (admin, membro, visualizador).',
+    description: 'Configure permissões por nível (Administrador, Gerente de Conta, Operador).',
     icon: '🔐',
   },
 ];

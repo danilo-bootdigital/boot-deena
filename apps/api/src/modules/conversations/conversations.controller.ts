@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Req, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { ConversationsService } from './conversations.service';
@@ -18,10 +19,13 @@ export class ConversationsController {
   @Get()
   findAll(
     @CurrentOrg() orgId: string,
+    @CurrentUser('id') userId: string,
+    @Req() req: any,
     @Query('status') status?: string,
     @Query('search') search?: string,
   ) {
-    return this.conversationsService.findAll(orgId, status, search);
+    const userRole = req.orgRole || 'operator';
+    return this.conversationsService.findAll(orgId, status, search, userId, userRole);
   }
 
   @Get(':id/messages')

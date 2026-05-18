@@ -93,6 +93,7 @@ export class AgentMembersService {
         agent_id: agentId,
         user_id: dto.user_id,
         permission: dto.permission,
+        role_type: dto.role_type || 'team',
         assigned_by: assignedBy,
       })
       .select('*, profiles(id, full_name, display_name, avatar_url)')
@@ -105,9 +106,13 @@ export class AgentMembersService {
   async updatePermission(agentId: string, organizationId: string, userId: string, dto: UpdateAgentMemberDto) {
     await this.verifyAgentBelongsToOrg(agentId, organizationId);
 
+    const updateData: Record<string, string> = {};
+    if (dto.permission) updateData.permission = dto.permission;
+    if (dto.role_type) updateData.role_type = dto.role_type;
+
     const { data, error } = await this.supabase
       .from('agent_members')
-      .update({ permission: dto.permission })
+      .update(updateData)
       .eq('agent_id', agentId)
       .eq('user_id', userId)
       .select()

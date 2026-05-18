@@ -10,6 +10,7 @@ interface AgentMember {
   agent_id: string;
   user_id: string;
   permission: string;
+  role_type: string;
   created_at: string;
   profiles: {
     id: string;
@@ -26,6 +27,18 @@ interface OrgMember {
   role: string;
 }
 
+const ROLE_TYPE_LABELS: Record<string, string> = {
+  owner: 'Responsável Principal',
+  manager: 'Gerente Vinculado',
+  team: 'Equipe Autorizada',
+};
+
+const ROLE_TYPE_COLORS: Record<string, string> = {
+  owner: 'bg-purple-100 text-purple-800',
+  manager: 'bg-blue-100 text-blue-800',
+  team: 'bg-gray-100 text-gray-800',
+};
+
 interface Props {
   agentId: string;
 }
@@ -37,6 +50,7 @@ export function AgentTeamTab({ agentId }: Props) {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedPermission, setSelectedPermission] = useState('view');
+  const [selectedRoleType, setSelectedRoleType] = useState('team');
   const [assigning, setAssigning] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -74,6 +88,7 @@ export function AgentTeamTab({ agentId }: Props) {
       await api.post(`/agents/${agentId}/members`, {
         user_id: selectedUser,
         permission: selectedPermission,
+        role_type: selectedRoleType,
       });
       setSelectedUser('');
       setMessage('Membro vinculado ao agente!');
@@ -85,14 +100,14 @@ export function AgentTeamTab({ agentId }: Props) {
     }
   }
 
-  async function handleUpdatePermission(userId: string, permission: string) {
+  async function handleUpdate(userId: string, field: string, value: string) {
     try {
-      await api.put(`/agents/${agentId}/members/${userId}`, { permission });
+      await api.put(`/agents/${agentId}/members/${userId}`, { [field]: value });
       setMembers((prev) =>
-        prev.map((m) => (m.user_id === userId ? { ...m, permission } : m)),
+        prev.map((m) => (m.user_id === userId ? { ...m, [field]: value } : m)),
       );
     } catch {
-      setMessage('Erro ao atualizar permissão.');
+      setMessage('Erro ao atualizar.');
     }
   }
 
@@ -118,36 +133,50 @@ export function AgentTeamTab({ agentId }: Props) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-500 mb-4">
-            Defina quem pode gerenciar, operar ou visualizar este agente.
+            Defina quem pode gerenciar, operar ou visualizar este agente e qual o papel na equipe.
           </p>
-          <form onSubmit={handleAssign} className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
-              <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedUser}
-                onChange={(e) => setSelectedUser(e.target.value)}
-                required
-              >
-                <option value="">Selecione um membro...</option>
-                {availableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.display_name || u.full_name} ({u.role})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="w-40">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Permissão</label>
-              <select
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedPermission}
-                onChange={(e) => setSelectedPermission(e.target.value)}
-              >
-                <option value="manage">Gerenciar</option>
-                <option value="operate">Operar</option>
-                <option value="view">Visualizar</option>
-              </select>
+          <form onSubmit={handleAssign} className="space-y-3">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                <select
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione um membro...</option>
+                  {availableUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.display_name || u.full_name} ({u.role})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="w-44">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Papel na Equipe</label>
+                <select
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={selectedRoleType}
+                  onChange={(e) => setSelectedRoleType(e.target.value)}
+                >
+                  <option value="owner">Responsável Principal</option>
+                  <option value="manager">Gerente Vinculado</option>
+                  <option value="team">Equipe Autorizada</option>
+                </select>
+              </div>
+              <div className="w-36">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Permissão</label>
+                <select
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={selectedPermission}
+                  onChange={(e) => setSelectedPermission(e.target.value)}
+                >
+                  <option value="manage">Gerenciar</option>
+                  <option value="operate">Operar</option>
+                  <option value="view">Visualizar</option>
+                </select>
+              </div>
             </div>
             <Button type="submit" disabled={assigning}>
               {assigning ? 'Vinculando...' : 'Vincular'}
@@ -173,15 +202,29 @@ export function AgentTeamTab({ agentId }: Props) {
                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
                     {(member.profiles?.display_name || member.profiles?.full_name || '?').charAt(0).toUpperCase()}
                   </div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {member.profiles?.display_name || member.profiles?.full_name || 'Usuário'}
-                  </p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {member.profiles?.display_name || member.profiles?.full_name || 'Usuário'}
+                    </p>
+                    <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${ROLE_TYPE_COLORS[member.role_type] || ROLE_TYPE_COLORS.team}`}>
+                      {ROLE_TYPE_LABELS[member.role_type] || member.role_type}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <select
+                    className="rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={member.role_type}
+                    onChange={(e) => handleUpdate(member.user_id, 'role_type', e.target.value)}
+                  >
+                    <option value="owner">Responsável</option>
+                    <option value="manager">Gerente</option>
+                    <option value="team">Equipe</option>
+                  </select>
                   <select
                     className="rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={member.permission}
-                    onChange={(e) => handleUpdatePermission(member.user_id, e.target.value)}
+                    onChange={(e) => handleUpdate(member.user_id, 'permission', e.target.value)}
                   >
                     <option value="manage">Gerenciar</option>
                     <option value="operate">Operar</option>
@@ -206,9 +249,9 @@ export function AgentTeamTab({ agentId }: Props) {
       </Card>
 
       <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 space-y-1">
-        <p><strong>Gerenciar:</strong> Pode editar configurações, fluxo e prompt do agente.</p>
-        <p><strong>Operar:</strong> Pode intervir em conversas e ver métricas do agente.</p>
-        <p><strong>Visualizar:</strong> Apenas visualiza conversas e status do agente.</p>
+        <p><strong>Responsável Principal:</strong> Dono do agente. Tem controle total sobre configurações e equipe.</p>
+        <p><strong>Gerente Vinculado:</strong> Gerencia o agente e seus atendentes. Pode editar configurações.</p>
+        <p><strong>Equipe Autorizada:</strong> Pode operar/visualizar o agente conforme a permissão definida.</p>
       </div>
     </div>
   );

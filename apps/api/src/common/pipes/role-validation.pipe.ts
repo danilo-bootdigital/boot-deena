@@ -1,6 +1,6 @@
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 
-const VALID_ROLES = ['owner', 'admin', 'member', 'viewer'];
+const VALID_ROLES = ['owner', 'admin', 'manager', 'operator'];
 
 @Injectable()
 export class RoleValidationPipe implements PipeTransform<string> {
