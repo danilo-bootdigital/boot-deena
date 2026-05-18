@@ -199,10 +199,94 @@ Sim. O chat de teste no dashboard funciona sem WhatsApp. Para atendimento real, 
 
 ---
 
+## Gerenciamento de Perfil de Usuário
+
+Cada usuário possui um perfil com dados complementares que é criado automaticamente ao se registrar.
+
+**Dados do perfil:**
+- Nome completo
+- Nome de exibição (como deseja ser chamado)
+- Telefone
+- Cargo
+- Bio (descrição breve)
+- Preferências (JSONB configurável)
+
+**Como acessar:** Configurações → Meu Perfil
+
+---
+
+## Níveis de Acesso (Permissões)
+
+O sistema possui 4 níveis de acesso na organização, cada um com permissões granulares configuráveis:
+
+| Nível | Descrição |
+|-------|-----------|
+| **Proprietário (owner)** | Acesso total, não pode ter permissões removidas |
+| **Administrador (admin)** | Gerencia agentes, membros e configurações |
+| **Membro (member)** | Opera agentes e conversas, sem poder criar/excluir |
+| **Visualizador (viewer)** | Apenas visualiza, sem poder intervir |
+
+**Permissões configuráveis por seção:**
+
+| Seção | Permissões disponíveis |
+|-------|----------------------|
+| Agentes | Criar, Editar, Excluir, Visualizar |
+| Conversas | Visualizar, Intervir, Exportar |
+| Base de Conhecimento | Criar, Editar, Excluir, Visualizar |
+| Membros | Convidar, Remover, Alterar Nível |
+| Configurações | Editar, Visualizar |
+| Faturamento | Visualizar, Gerenciar |
+
+**Como configurar:** Configurações → Níveis de Acesso → selecione o nível → marque/desmarque permissões → Salvar
+
+**Permissões padrão:** Ao criar uma organização, clique em "Aplicar Permissões Padrão" para carregar o template recomendado.
+
+---
+
+## Gerenciamento de Membros
+
+Gerencie quem faz parte da sua organização.
+
+**Funcionalidades:**
+- Convidar novos membros por e-mail com nível de acesso definido
+- Visualizar todos os membros com seus respectivos níveis
+- Remover membros (exceto o proprietário)
+
+**Como acessar:** Configurações → Membros
+
+**Como convidar:**
+1. Acesse Configurações → Membros
+2. Preencha o e-mail do usuário
+3. Selecione o nível (Administrador, Membro ou Visualizador)
+4. Clique em "Convidar"
+
+---
+
+## Vinculação de Usuários a Agentes (Equipe do Agente)
+
+Cada agente pode ter uma equipe de usuários vinculados com permissões específicas:
+
+| Permissão | O que pode fazer |
+|-----------|-----------------|
+| **Gerenciar** | Editar configurações, fluxo e prompt do agente |
+| **Operar** | Intervir em conversas e ver métricas do agente |
+| **Visualizar** | Apenas visualiza conversas e status do agente |
+
+**Como vincular:**
+1. Acesse Agentes → clique no agente → aba "Equipe"
+2. Selecione um membro da organização
+3. Escolha a permissão (Gerenciar, Operar ou Visualizar)
+4. Clique em "Vincular"
+
+**Como alterar permissão:** Na lista de membros do agente, altere o dropdown de permissão.
+
+**Como remover:** Clique em "Remover" ao lado do membro.
+
+---
+
 ## Próximas funcionalidades
 
 - Suporte a áudio (transcrever e responder com voz)
 - Histórico de conversas no dashboard
 - Dashboard de métricas (atendimentos, tokens, tempo médio)
 - Vincular WhatsApp ao agente pelo dashboard
-- Base de conhecimento (upload de documentos)
