@@ -1,4 +1,5 @@
 import type { Node, Edge } from 'reactflow';
+import { clinicaForezeFlow } from './templates/clinica-foreze';
 
 interface FlowTemplate {
   id: string;
@@ -86,4 +87,5 @@ export const flowTemplates: FlowTemplate[] = [
       { id: 'e6', source: 'n5', target: 'n7', sourceHandle: 'false', animated: true },
     ],
   },
+  clinicaForezeFlow,
 ];
