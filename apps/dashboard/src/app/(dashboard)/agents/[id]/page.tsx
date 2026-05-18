@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
+import { FlowEditor } from '@/components/flow-editor';
 import { useAuth } from '@/hooks/use-auth';
 import { useOrganization } from '@/hooks/use-organization';
 import { api } from '@/lib/api';
@@ -23,7 +24,7 @@ interface Agent {
   updated_at: string;
 }
 
-type Tab = 'config' | 'prompt' | 'status';
+type Tab = 'flow' | 'config' | 'prompt' | 'status';
 
 export default function AgentEditPage() {
   const params = useParams();
@@ -31,12 +32,14 @@ export default function AgentEditPage() {
   const { session } = useAuth();
   const { currentOrg } = useOrganization();
   const [agent, setAgent] = useState<Agent | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('config');
+  const [activeTab, setActiveTab] = useState<Tab>('flow');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [flowNodes, setFlowNodes] = useState<any[]>([]);
+  const [flowEdges, setFlowEdges] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     name: '',
@@ -56,7 +59,7 @@ export default function AgentEditPage() {
 
   async function loadAgent() {
     try {
-      const data = await api<Agent>(`/agents/${params.id}`, {
+      const data = await api<Agent & { settings?: any }>(`/agents/${params.id}`, {
         token: session!.access_token,
         orgId: currentOrg!.id,
       });
@@ -71,6 +74,11 @@ export default function AgentEditPage() {
         max_tokens: data.max_tokens,
         status: data.status || 'draft',
       });
+      // Load flow from settings
+      if (data.settings?.flow) {
+        setFlowNodes(data.settings.flow.nodes || []);
+        setFlowEdges(data.settings.flow.edges || []);
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar agente');
     } finally {
@@ -121,6 +129,7 @@ export default function AgentEditPage() {
   }
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: 'flow', label: 'Fluxo' },
     { key: 'config', label: 'Configurações' },
     { key: 'prompt', label: 'Prompt do Sistema' },
     { key: 'status', label: 'Status' },
@@ -175,6 +184,40 @@ export default function AgentEditPage() {
           </button>
         ))}
       </div>
+
+      {activeTab === 'flow' && (
+        <div>
+          <p className="text-sm text-gray-500 mb-3">
+            Monte o fluxo de atendimento do agente. Arraste os blocos da barra superior e conecte-os para definir o comportamento.
+          </p>
+          <FlowEditor
+            initialNodes={flowNodes}
+            initialEdges={flowEdges}
+            onSave={async (nodes, edges) => {
+              setSaving(true);
+              setError('');
+              try {
+                // Save flow as agent settings
+                await api(`/agents/${params.id}`, {
+                  method: 'PUT',
+                  token: session!.access_token,
+                  orgId: currentOrg!.id,
+                  body: JSON.stringify({
+                    settings: { flow: { nodes, edges } },
+                  }),
+                });
+                setSuccess('Fluxo salvo com sucesso!');
+                setTimeout(() => setSuccess(''), 3000);
+              } catch (err: any) {
+                setError(err.message || 'Erro ao salvar fluxo');
+              } finally {
+                setSaving(false);
+              }
+            }}
+            saving={saving}
+          />
+        </div>
+      )}
 
       {activeTab === 'config' && (
         <Card>
