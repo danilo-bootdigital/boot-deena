@@ -334,6 +334,58 @@ Cada agente pode ter uma equipe de usuários vinculados com papéis e permissõe
 
 ---
 
+## Mensagens Agendadas (Follow-up, Confirmação, Reativação)
+
+O sistema permite agendar mensagens automáticas para envio futuro, garantindo acompanhamento do paciente/lead sem intervenção manual.
+
+### Tipos de mensagem agendada
+
+| Tipo | Quando é enviada | Exemplo |
+|------|-----------------|---------|
+| **Follow-up 1h** | 1 hora após paciente parar de responder | "Oi, passando só para confirmar se você ainda deseja seguir com o agendamento." |
+| **Follow-up 24h** | 24 horas sem resposta | "Olá, tudo bem? Ainda posso te ajudar a encontrar um melhor horário para sua consulta?" |
+| **Follow-up 3 dias** | 3 dias sem resposta (encerramento) | "Estamos encerrando este atendimento por enquanto, mas quando quiser retomar, é só nos chamar." |
+| **Confirmação 24h** | 24 horas antes da consulta | "Olá, {{nome}}. Sua consulta está agendada para amanhã às {{horario}}. Podemos confirmar sua presença?" |
+| **No-show** | Após paciente não comparecer | "Vimos que você não conseguiu comparecer à consulta. Deseja remarcar?" |
+| **Pós-consulta** | Após atendimento realizado | "Esperamos que tenha sido bem atendido(a). Se precisar agendar retorno, posso ajudar." |
+| **Reativação** | Período longo sem retorno | "Notamos que já faz um tempo desde seu último atendimento. Deseja verificar disponibilidade?" |
+| **Personalizado** | Configurável pelo usuário | Qualquer mensagem com delay customizado |
+
+### Como funciona
+
+1. O **Flow Engine** do worker processa o fluxo visual do agente
+2. Quando encontra um nó "⏰ Agendar Mensagem", cria um registro na tabela `scheduled_messages`
+3. Um **job recorrente** (a cada 60 segundos) verifica mensagens pendentes cujo horário já passou
+4. A mensagem é enviada via WhatsApp (Evolution API) e salva no histórico da conversa
+5. Se o paciente responder antes do envio, os follow-ups pendentes são **cancelados automaticamente**
+
+### Comportamento inteligente
+
+- **Cancelamento automático**: Quando o paciente envia uma mensagem, todos os follow-ups pendentes daquela conversa são cancelados (evita spam)
+- **Respeita status da conversa**: Se a conversa foi encerrada ou arquivada, mensagens agendadas são canceladas
+- **Variáveis dinâmicas**: As mensagens suportam `{{nome}}`, `{{especialidade}}`, `{{horario}}`, etc.
+
+### Como usar no Flow Editor
+
+1. Acesse Agentes → clique no agente → aba "Fluxo"
+2. Na barra superior, clique em **"⏰ Agendar Msg"**
+3. Configure:
+   - **Tipo**: Follow-up 1h, Confirmação 24h, Pós-consulta, etc.
+   - **Atraso**: Tempo em minutos (60 = 1h, 1440 = 1 dia, 4320 = 3 dias)
+   - **Mensagem**: Texto a enviar (suporta variáveis)
+4. Conecte o nó ao fluxo e salve
+
+### API de Mensagens Agendadas
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/scheduled-messages` | Listar agendamentos (filtro por conversation_id, agent_id, status) |
+| POST | `/scheduled-messages` | Criar agendamento manual |
+| PUT | `/scheduled-messages/:id/cancel` | Cancelar agendamento pendente |
+| DELETE | `/scheduled-messages/:id` | Remover agendamento |
+
+---
+
 ## Próximas funcionalidades
 
 - Suporte a áudio (transcrever e responder com voz)
