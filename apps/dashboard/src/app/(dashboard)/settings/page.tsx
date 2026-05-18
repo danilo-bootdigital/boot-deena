@@ -1,29 +1,47 @@
 'use client';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+
+const settingsItems = [
+  {
+    href: '/settings/profile',
+    title: 'Meu Perfil',
+    description: 'Edite suas informações pessoais, cargo e preferências.',
+    icon: '👤',
+  },
+  {
+    href: '/settings/members',
+    title: 'Membros',
+    description: 'Gerencie os membros da organização e convide novos usuários.',
+    icon: '👥',
+  },
+  {
+    href: '/settings/access-levels',
+    title: 'Níveis de Acesso',
+    description: 'Configure permissões granulares por nível (admin, membro, visualizador).',
+    icon: '🔐',
+  },
+];
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
 
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold">Organização</h2>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">Configurações da organização serão exibidas aqui.</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-semibold">WhatsApp</h2>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500">Gerencie suas instâncias do WhatsApp.</p>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {settingsItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+              <CardContent className="p-6">
+                <div className="text-3xl mb-3">{item.icon}</div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h2>
+                <p className="text-sm text-gray-500">{item.description}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

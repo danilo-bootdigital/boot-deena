@@ -11,6 +11,9 @@ import { QueueModule } from './modules/queue/queue.module';
 import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.module';
 import { FlowsModule } from './modules/flows/flows.module';
 import { HealthModule } from './modules/health/health.module';
+import { ProfilesModule } from './modules/profiles/profiles.module';
+import { AccessLevelsModule } from './modules/access-levels/access-levels.module';
+import { AgentMembersModule } from './modules/agent-members/agent-members.module';
 import { appConfig } from './config/app.config';
 import { redisConfig } from './config/redis.config';
 
@@ -38,6 +41,9 @@ import { redisConfig } from './config/redis.config';
       },
     }),
     HealthModule,
+    ProfilesModule,
+    AccessLevelsModule,
+    AgentMembersModule,
     OrganizationsModule,
     AgentsModule,
     ConversationsModule,

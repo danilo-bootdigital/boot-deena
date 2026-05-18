@@ -1,12 +1,14 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
 import { AgentsService } from './agents.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { createAgentSchema, updateAgentSchema } from './dto/create-agent.dto';
 
 @Controller('agents')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, RolesGuard)
 export class AgentsController {
   constructor(private agentsService: AgentsService) {}
 
@@ -21,6 +23,7 @@ export class AgentsController {
   }
 
   @Post()
+  @Roles('owner', 'admin')
   create(
     @Body(new ZodValidationPipe(createAgentSchema)) body: unknown,
     @CurrentOrg() orgId: string,
@@ -29,6 +32,7 @@ export class AgentsController {
   }
 
   @Put(':id')
+  @Roles('owner', 'admin')
   update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateAgentSchema)) body: unknown,
@@ -38,6 +42,7 @@ export class AgentsController {
   }
 
   @Delete(':id')
+  @Roles('owner', 'admin')
   remove(@Param('id') id: string, @CurrentOrg() orgId: string) {
     return this.agentsService.remove(id, orgId);
   }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { FlowEditor } from '@/components/flow-editor';
 import { ChatTest } from '@/components/chat-test/chat-test';
+import { AgentTeamTab } from '@/components/agent-team/agent-team-tab';
 import { useAuth } from '@/hooks/use-auth';
 import { useOrganization } from '@/hooks/use-organization';
 import { api } from '@/lib/api';
@@ -25,7 +26,7 @@ interface Agent {
   updated_at: string;
 }
 
-type Tab = 'flow' | 'test' | 'config' | 'prompt' | 'status';
+type Tab = 'flow' | 'test' | 'config' | 'prompt' | 'status' | 'team';
 
 export default function AgentEditPage() {
   const params = useParams();
@@ -134,6 +135,7 @@ export default function AgentEditPage() {
     { key: 'test', label: 'Testar' },
     { key: 'config', label: 'Configurações' },
     { key: 'prompt', label: 'Prompt do Sistema' },
+    { key: 'team', label: 'Equipe' },
     { key: 'status', label: 'Status' },
   ];
 
@@ -339,6 +341,10 @@ export default function AgentEditPage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === 'team' && (
+        <AgentTeamTab agentId={params.id as string} />
       )}
 
       {activeTab === 'status' && (
