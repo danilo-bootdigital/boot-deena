@@ -1,5 +1,6 @@
 import type { Node, Edge } from 'reactflow';
 import { clinicaForezeFlow } from './templates/clinica-foreze';
+import { bootDigitalSDRFlow } from './templates/boot-digital-sdr';
 
 interface FlowTemplate {
   id: string;
@@ -88,4 +89,10 @@ export const flowTemplates: FlowTemplate[] = [
     ],
   },
   clinicaForezeFlow,
+  {
+    id: 'boot-digital-sdr',
+    name: 'Boot Digital — SDR Comercial',
+    description: 'Fluxo completo de qualificação: identificação, dor, objetivo, classificação de lead (frio/morno/quente), direcionamento para reunião e follow-ups automáticos.',
+    ...bootDigitalSDRFlow,
+  },
 ];
