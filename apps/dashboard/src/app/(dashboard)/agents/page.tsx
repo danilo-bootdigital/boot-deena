@@ -177,8 +177,8 @@ export default function AgentsPage() {
                           {statusLabels[status] || status}
                         </span>
                       </div>
-                      {agent.description && <p className="text-xs text-dark-400 mt-1 truncate">{agent.description}</p>}
-                      <p className="text-[11px] text-dark-500 mt-1 font-mono">{agent.provider}/{agent.model}</p>
+                      {agent.description && <p className="text-sm text-dark-200 mt-1 truncate">{agent.description}</p>}
+                      <p className="text-xs text-dark-400 mt-1 font-mono">{agent.provider}/{agent.model}</p>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       {canEdit && (
