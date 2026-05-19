@@ -56,7 +56,14 @@ export class SupabaseAuthGuard implements CanActivate {
         throw new ForbiddenException('User does not belong to this organization');
       }
 
-      request.orgRole = membership.role;
+      // Verificar se é master_admin
+      const { data: profile } = await this.supabaseAdmin
+        .from('profiles')
+        .select('is_master_admin')
+        .eq('id', user.id)
+        .single();
+
+      request.orgRole = profile?.is_master_admin ? 'master_admin' : membership.role;
     }
 
     request.user = user;

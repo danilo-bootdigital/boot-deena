@@ -15,13 +15,25 @@ export class OrganizationsService {
   }
 
   async findAllForUser(userId: string) {
+    // Verificar se é master_admin
+    const { data: profile } = await this.supabase
+      .from('profiles')
+      .select('is_master_admin')
+      .eq('id', userId)
+      .single();
+
+    const isMaster = profile?.is_master_admin === true;
+
     const { data, error } = await this.supabase
       .from('org_members')
       .select('role, organizations(id, name, slug, created_at)')
       .eq('user_id', userId);
 
     if (error) throw error;
-    return data?.map((m) => ({ ...m.organizations, role: m.role })) || [];
+    return data?.map((m) => ({
+      ...m.organizations,
+      role: isMaster ? 'master_admin' : m.role,
+    })) || [];
   }
 
   async findOne(id: string) {
