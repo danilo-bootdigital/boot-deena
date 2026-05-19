@@ -86,6 +86,57 @@ export class InboundMessageProcessor extends WorkerHost {
         }
       }
 
+      // Se for documento ou imagem, baixar e salvar no Storage
+      if (message.type === 'document' || message.type === 'image') {
+        try {
+          const media = await this.evolutionSender.downloadMedia(instanceName, messageId);
+          const fileBuffer = Buffer.from(media.base64, 'base64');
+          const ext = media.mimetype.split('/')[1]?.split(';')[0] || 'bin';
+          const fileName = message.content || `${message.type}_${Date.now()}.${ext}`;
+          const storagePath = `${resolved.organizationId}/${resolved.conversationId}/${Date.now()}_${fileName}`;
+
+          // Upload para Supabase Storage
+          const { error: uploadError } = await this.supabase.storage
+            .from('attachments')
+            .upload(storagePath, fileBuffer, {
+              contentType: media.mimetype,
+              upsert: false,
+            });
+
+          if (!uploadError) {
+            const { data: urlData } = this.supabase.storage
+              .from('attachments')
+              .getPublicUrl(storagePath);
+
+            // Registrar na tabela de anexos
+            await this.supabase
+              .from('conversation_attachments')
+              .insert({
+                organization_id: resolved.organizationId,
+                conversation_id: resolved.conversationId,
+                file_name: fileName,
+                file_type: message.type,
+                mimetype: media.mimetype,
+                file_size: fileBuffer.length,
+                storage_path: storagePath,
+                public_url: urlData?.publicUrl || null,
+                uploaded_by: 'patient',
+              });
+
+            messageContent = message.type === 'image'
+              ? `[Imagem recebida: ${fileName}]`
+              : `[Documento recebido: ${fileName}]`;
+            this.logger.log(`Attachment saved: ${storagePath}`);
+          } else {
+            this.logger.error(`Failed to upload attachment: ${uploadError.message}`);
+            messageContent = `[${message.type === 'image' ? 'Imagem' : 'Documento'} recebido mas não salvo]`;
+          }
+        } catch (err) {
+          this.logger.error(`Failed to process attachment: ${(err as Error).message}`);
+          messageContent = `[${message.type === 'image' ? 'Imagem' : 'Documento'} não processado]`;
+        }
+      }
+
       await this.messageStore.saveUserMessage({
         conversationId: resolved.conversationId,
         organizationId: resolved.organizationId,

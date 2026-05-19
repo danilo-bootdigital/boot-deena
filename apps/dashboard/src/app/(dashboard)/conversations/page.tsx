@@ -25,6 +25,16 @@ interface Message {
   tokens_output?: number;
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_type: string;
+  mimetype: string;
+  file_size: number;
+  public_url: string | null;
+  created_at: string;
+}
+
 const STATUS_LABELS: Record<string, string> = {
   open: 'Aberta',
   closed: 'Encerrada',
@@ -50,6 +60,8 @@ export default function ConversationsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [replyContent, setReplyContent] = useState('');
   const [sending, setSending] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [showAttachments, setShowAttachments] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,11 +93,17 @@ export default function ConversationsPage() {
   async function selectConversation(conv: Conversation) {
     setSelectedConversation(conv);
     setLoadingMessages(true);
+    setShowAttachments(false);
     try {
-      const data = await api.get<Message[]>(`/conversations/${conv.id}/messages`);
-      setMessages(data);
+      const [msgs, atts] = await Promise.all([
+        api.get<Message[]>(`/conversations/${conv.id}/messages`),
+        api.get<Attachment[]>(`/conversations/${conv.id}/attachments`),
+      ]);
+      setMessages(msgs);
+      setAttachments(atts);
     } catch {
       setMessages([]);
+      setAttachments([]);
     } finally {
       setLoadingMessages(false);
     }
@@ -226,11 +244,57 @@ export default function ConversationsPage() {
                       {selectedConversation.contact_phone} · {selectedConversation.agents?.name || 'Sem agente'}
                     </p>
                   </div>
-                  <span className={`px-2 py-1 text-xs rounded-full ${STATUS_COLORS[selectedConversation.status] || STATUS_COLORS.open}`}>
-                    {STATUS_LABELS[selectedConversation.status] || selectedConversation.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {attachments.length > 0 && (
+                      <button
+                        onClick={() => setShowAttachments(!showAttachments)}
+                        className={`px-2 py-1 text-xs rounded-lg font-medium transition-colors ${
+                          showAttachments ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      >
+                        📎 {attachments.length} {attachments.length === 1 ? 'anexo' : 'anexos'}
+                      </button>
+                    )}
+                    <span className={`px-2 py-1 text-xs rounded-full ${STATUS_COLORS[selectedConversation.status] || STATUS_COLORS.open}`}>
+                      {STATUS_LABELS[selectedConversation.status] || selectedConversation.status}
+                    </span>
+                  </div>
                 </div>
               </div>
+
+              {/* Painel de anexos */}
+              {showAttachments && (
+                <div className="px-4 py-3 border-b border-gray-200 bg-white max-h-48 overflow-y-auto">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Documentos e Imagens</p>
+                  <div className="space-y-2">
+                    {attachments.map((att) => (
+                      <div key={att.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">
+                            {att.file_type === 'image' ? '🖼️' : '📄'}
+                          </span>
+                          <div>
+                            <p className="text-sm text-gray-700 truncate max-w-[200px]">{att.file_name}</p>
+                            <p className="text-[10px] text-gray-400">
+                              {att.file_size ? `${(att.file_size / 1024).toFixed(1)} KB` : ''} · {new Date(att.created_at).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        {att.public_url && (
+                          <a
+                            href={att.public_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                          >
+                            Abrir
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Mensagens */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50">
@@ -253,6 +317,12 @@ export default function ConversationsPage() {
                       >
                         {msg.type === 'audio' && msg.role === 'user' && (
                           <span className="text-xs opacity-70 block mb-1">🎙️ Áudio transcrito:</span>
+                        )}
+                        {msg.type === 'document' && msg.role === 'user' && (
+                          <span className="text-xs opacity-70 block mb-1">📄 Documento:</span>
+                        )}
+                        {msg.type === 'image' && msg.role === 'user' && (
+                          <span className="text-xs opacity-70 block mb-1">🖼️ Imagem:</span>
                         )}
                         <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                         <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-gray-400' : 'text-blue-200'}`}>

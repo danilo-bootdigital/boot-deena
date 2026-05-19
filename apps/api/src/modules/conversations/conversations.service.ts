@@ -86,4 +86,16 @@ export class ConversationsService {
     if (error) throw error;
     return data;
   }
+
+  async getAttachments(conversationId: string, organizationId: string) {
+    const { data, error } = await this.supabase
+      .from('conversation_attachments')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
 }

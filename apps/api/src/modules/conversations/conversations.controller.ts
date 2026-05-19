@@ -36,6 +36,14 @@ export class ConversationsController {
     return this.conversationsService.getMessages(id, orgId);
   }
 
+  @Get(':id/attachments')
+  getAttachments(
+    @Param('id', UuidValidationPipe) id: string,
+    @CurrentOrg() orgId: string,
+  ) {
+    return this.conversationsService.getAttachments(id, orgId);
+  }
+
   @Post(':id/messages')
   sendMessage(
     @Param('id', UuidValidationPipe) id: string,

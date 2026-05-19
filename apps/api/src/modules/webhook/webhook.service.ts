@@ -55,7 +55,7 @@ export class WebhookService {
     }
     if (message.imageMessage) {
       const img = message.imageMessage as Record<string, unknown>;
-      return { type: 'image', content: (img.caption as string) || '' };
+      return { type: 'image', content: (img.caption as string) || '', mediaUrl: (img.url as string) || '', mimetype: (img.mimetype as string) || 'image/jpeg' };
     }
     if (message.audioMessage) {
       const audio = message.audioMessage as Record<string, unknown>;
@@ -63,7 +63,7 @@ export class WebhookService {
     }
     if (message.documentMessage) {
       const doc = message.documentMessage as Record<string, unknown>;
-      return { type: 'document', content: (doc.fileName as string) || '' };
+      return { type: 'document', content: (doc.fileName as string) || '', mediaUrl: (doc.url as string) || '', mimetype: (doc.mimetype as string) || 'application/octet-stream' };
     }
 
     return { type: 'text', content: '' };
