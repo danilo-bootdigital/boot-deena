@@ -27,20 +27,18 @@ export class ConversationsService {
     return data?.map((m) => m.agent_id) || [];
   }
 
-  async findAll(organizationId: string, status?: string, search?: string, userId?: string, userRole?: string) {
-    const allowedAgentIds = userId && userRole
-      ? await this.getAllowedAgentIds(userId, userRole, organizationId)
-      : null;
-
+  async findAll(organizationId: string, status?: string, search?: string, userId?: string, filter?: any) {
     let query = this.supabase
       .from('conversations')
       .select('*, agents(id, name)')
       .eq('organization_id', organizationId)
       .order('last_message_at', { ascending: false, nullsFirst: false });
 
-    if (allowedAgentIds !== null) {
-      if (allowedAgentIds.length === 0) return [];
-      query = query.in('agent_id', allowedAgentIds);
+    // Filtrar por agentes permitidos
+    if (filter && !filter.allAccess) {
+      const agentIds = filter.agentIds || [];
+      if (agentIds.length === 0) return [];
+      query = query.in('agent_id', agentIds);
     }
 
     if (status) {

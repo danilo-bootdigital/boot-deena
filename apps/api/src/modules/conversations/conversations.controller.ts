@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Param, Query, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { TenantFilterGuard } from '../../common/guards/tenant-filter.guard';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { GetTenantFilter, TenantFilterData } from '../../common/decorators/tenant-filter.decorator';
 import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { ConversationsService } from './conversations.service';
@@ -12,7 +14,7 @@ const sendMessageSchema = z.object({
 });
 
 @Controller('conversations')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, TenantFilterGuard)
 export class ConversationsController {
   constructor(private conversationsService: ConversationsService) {}
 
@@ -20,12 +22,11 @@ export class ConversationsController {
   findAll(
     @CurrentOrg() orgId: string,
     @CurrentUser('id') userId: string,
-    @Req() req: any,
+    @GetTenantFilter() filter: TenantFilterData,
     @Query('status') status?: string,
     @Query('search') search?: string,
   ) {
-    const userRole = req.orgRole || 'operator';
-    return this.conversationsService.findAll(orgId, status, search, userId, userRole);
+    return this.conversationsService.findAll(orgId, status, search, userId, filter);
   }
 
   @Get(':id/messages')

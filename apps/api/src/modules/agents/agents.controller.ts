@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { TenantFilterGuard } from '../../common/guards/tenant-filter.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentOrg } from '../../common/decorators/current-org.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { GetTenantFilter, TenantFilterData } from '../../common/decorators/tenant-filter.decorator';
 import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { AgentsService } from './agents.service';
@@ -11,7 +13,7 @@ import { createAgentSchema, updateAgentSchema, chatSchema } from './dto/create-a
 import type { ChatDto } from './dto/create-agent.dto';
 
 @Controller('agents')
-@UseGuards(SupabaseAuthGuard, RolesGuard)
+@UseGuards(SupabaseAuthGuard, RolesGuard, TenantFilterGuard)
 export class AgentsController {
   constructor(private agentsService: AgentsService) {}
 
@@ -19,10 +21,9 @@ export class AgentsController {
   findAll(
     @CurrentOrg() orgId: string,
     @CurrentUser('id') userId: string,
-    @Req() req: any,
+    @GetTenantFilter() filter: TenantFilterData,
   ) {
-    const userRole = req.orgRole || 'operator';
-    return this.agentsService.findAll(orgId, userId, userRole);
+    return this.agentsService.findAll(orgId, userId, filter);
   }
 
   @Get(':id')
