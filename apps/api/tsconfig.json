@@ -9,7 +9,8 @@
     "experimentalDecorators": true,
     "declaration": false,
     "declarationMap": false,
-    "composite": false
+    "composite": false,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test"]
