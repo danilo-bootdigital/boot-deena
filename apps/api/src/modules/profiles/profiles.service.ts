@@ -44,15 +44,18 @@ export class ProfilesService {
       .eq('organization_id', organizationId);
 
     if (error) throw error;
-    return data?.map((m) => ({
-      id: m.profiles?.id || m.user_id,
-      user_id: m.user_id,
-      full_name: m.profiles?.full_name || 'Usuário',
-      display_name: m.profiles?.display_name || null,
-      avatar_url: m.profiles?.avatar_url || null,
-      job_title: m.profiles?.job_title || null,
-      email: m.profiles?.email || null,
-      role: m.role,
-    })) || [];
+    return data?.map((m: any) => {
+      const profile = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+      return {
+        id: profile?.id || m.user_id,
+        user_id: m.user_id,
+        full_name: profile?.full_name || 'Usuário',
+        display_name: profile?.display_name || null,
+        avatar_url: profile?.avatar_url || null,
+        job_title: profile?.job_title || null,
+        email: profile?.email || null,
+        role: m.role,
+      };
+    }) || [];
   }
 }
