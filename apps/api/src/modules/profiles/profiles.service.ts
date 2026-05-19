@@ -40,10 +40,10 @@ export class ProfilesService {
   async findByOrganization(organizationId: string) {
     const { data, error } = await this.supabase
       .from('org_members')
-      .select('role, user_id, profiles(id, full_name, display_name, avatar_url, job_title)')
+      .select('role, user_id, profiles(id, full_name, display_name, avatar_url, job_title, email)')
       .eq('organization_id', organizationId);
 
     if (error) throw error;
-    return data?.map((m) => ({ ...m.profiles, role: m.role })) || [];
+    return data?.map((m) => ({ ...m.profiles, role: m.role, user_id: m.user_id })) || [];
   }
 }

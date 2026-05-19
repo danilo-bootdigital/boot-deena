@@ -22,6 +22,7 @@ interface AgentMember {
 
 interface OrgMember {
   id: string;
+  user_id?: string;
   full_name: string;
   display_name: string | null;
   role: string;
@@ -75,7 +76,7 @@ export function AgentTeamTab({ agentId }: Props) {
   }
 
   const availableUsers = orgMembers.filter(
-    (om) => !members.some((m) => m.user_id === om.id),
+    (om) => !members.some((m) => m.user_id === (om.user_id || om.id)),
   );
 
   async function handleAssign(e: React.FormEvent) {
@@ -147,7 +148,7 @@ export function AgentTeamTab({ agentId }: Props) {
                 >
                   <option value="">Selecione um membro...</option>
                   {availableUsers.map((u) => (
-                    <option key={u.id} value={u.id}>
+                    <option key={u.user_id || u.id} value={u.user_id || u.id}>
                       {u.display_name || u.full_name} ({u.role})
                     </option>
                   ))}

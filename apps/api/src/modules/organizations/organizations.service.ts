@@ -111,11 +111,11 @@ export class OrganizationsService {
       userId = userData;
     } else {
       // Buscar no auth
-      const { data: users } = await this.supabase.auth.admin.listUsers({
+      const { data: users } = await (this.supabase.auth.admin as any).listUsers({
         page: 1,
         perPage: 1000,
       });
-      const user = users?.users?.find((u) => u.email === dto.email);
+      const user = users?.users?.find((u: any) => u.email === dto.email);
       if (user) {
         userId = user.id;
       }
@@ -126,7 +126,7 @@ export class OrganizationsService {
       if (!dto.password) {
         throw new NotFoundException('Usuário não encontrado. Informe uma senha para criar a conta.');
       }
-      const { data: newUser, error: createError } = await this.supabase.auth.admin.createUser({
+      const { data: newUser, error: createError } = await (this.supabase.auth.admin as any).createUser({
         email: dto.email,
         password: dto.password,
         email_confirm: true,

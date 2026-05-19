@@ -9,6 +9,7 @@ import { useApiClient } from '@/hooks/use-api-client';
 
 interface Member {
   id: string;
+  user_id?: string;
   full_name: string;
   display_name: string | null;
   avatar_url: string | null;
@@ -115,7 +116,7 @@ export default function MembersPage() {
 
     setSaving(true);
     try {
-      await api.put(`/organizations/${currentOrg.id}/members/${editingMember.id}`, {
+      await api.put(`/organizations/${currentOrg.id}/members/${editingMember.user_id || editingMember.id}`, {
         role: editRole,
         all_agents: editRole === 'admin' ? true : editAllAgents,
         agent_ids: (!editAllAgents && editRole !== 'admin') ? editAgentIds : undefined,
@@ -295,7 +296,7 @@ export default function MembersPage() {
                           Editar
                         </button>
                         <button
-                          onClick={() => handleRemove(member.id)}
+                          onClick={() => handleRemove(member.user_id || member.id)}
                           className="text-xs text-red-400 hover:text-red-400"
                         >
                           Remover
