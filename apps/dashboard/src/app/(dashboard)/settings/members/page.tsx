@@ -332,8 +332,9 @@ export default function MembersPage() {
                       </div>
                     </div>
 
-                    {editRole !== 'admin' && (
+                    {editRole !== 'company_admin' && (
                       <div className="space-y-2">
+                        <p className="text-[10px] text-dark-400 uppercase tracking-wide">Agentes</p>
                         <div className="flex items-center gap-4">
                           <label className="flex items-center gap-2 text-xs cursor-pointer">
                             <input type="radio" checked={editAllAgents} onChange={() => setEditAllAgents(true)} className="text-brand-400" />

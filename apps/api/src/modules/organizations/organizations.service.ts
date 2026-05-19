@@ -282,4 +282,72 @@ export class OrganizationsService {
     if (error) throw error;
     return { removed: true };
   }
+
+  // === Vinculação Membro → WhatsApp ===
+
+  async getMemberWhatsappAccess(organizationId: string, userId: string) {
+    const { data, error } = await this.supabase
+      .from('member_whatsapp_access')
+      .select('whatsapp_instance_id')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return data?.map((d: any) => d.whatsapp_instance_id) || [];
+  }
+
+  async updateMemberWhatsappAccess(organizationId: string, userId: string, instanceIds: string[]) {
+    // Remover vinculações antigas
+    await this.supabase
+      .from('member_whatsapp_access')
+      .delete()
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId);
+
+    // Inserir novas
+    if (instanceIds && instanceIds.length > 0) {
+      const rows = instanceIds.map((id) => ({
+        user_id: userId,
+        whatsapp_instance_id: id,
+        organization_id: organizationId,
+      }));
+      const { error } = await this.supabase
+        .from('member_whatsapp_access')
+        .insert(rows);
+      if (error) throw error;
+    }
+
+    return { updated: true, whatsapp_instance_ids: instanceIds };
+  }
+
+  // === Vinculação Membro → Pipeline ===
+
+  async getMemberPipelineAccess(organizationId: string, userId: string) {
+    const { data, error } = await this.supabase
+      .from('member_pipeline_access')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || { can_view: true, can_move: true, can_create: false, can_delete: false };
+  }
+
+  async updateMemberPipelineAccess(
+    organizationId: string,
+    userId: string,
+    access: { can_view: boolean; can_move: boolean; can_create: boolean; can_delete: boolean },
+  ) {
+    const { error } = await this.supabase
+      .from('member_pipeline_access')
+      .upsert({
+        user_id: userId,
+        organization_id: organizationId,
+        ...access,
+      }, { onConflict: 'user_id,organization_id' });
+
+    if (error) throw error;
+    return { updated: true, ...access };
+  }
 }

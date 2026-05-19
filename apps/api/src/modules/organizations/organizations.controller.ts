@@ -93,4 +93,50 @@ export class OrganizationsController {
   ) {
     return this.orgsService.updateMemberRole(orgId, userId, body as any);
   }
+
+  // === Vinculação Membro → WhatsApp ===
+
+  @Get(':id/members/:userId/whatsapp')
+  @UseGuards(RolesGuard)
+  @Roles('company_admin', 'admin')
+  getMemberWhatsapp(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+  ) {
+    return this.orgsService.getMemberWhatsappAccess(orgId, userId);
+  }
+
+  @Put(':id/members/:userId/whatsapp')
+  @UseGuards(RolesGuard)
+  @Roles('company_admin', 'admin')
+  updateMemberWhatsapp(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+    @Body() body: { whatsapp_instance_ids: string[] },
+  ) {
+    return this.orgsService.updateMemberWhatsappAccess(orgId, userId, body.whatsapp_instance_ids);
+  }
+
+  // === Vinculação Membro → Pipeline ===
+
+  @Get(':id/members/:userId/pipeline')
+  @UseGuards(RolesGuard)
+  @Roles('company_admin', 'admin')
+  getMemberPipeline(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+  ) {
+    return this.orgsService.getMemberPipelineAccess(orgId, userId);
+  }
+
+  @Put(':id/members/:userId/pipeline')
+  @UseGuards(RolesGuard)
+  @Roles('company_admin', 'admin')
+  updateMemberPipeline(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+    @Body() body: { can_view: boolean; can_move: boolean; can_create: boolean; can_delete: boolean },
+  ) {
+    return this.orgsService.updateMemberPipelineAccess(orgId, userId, body);
+  }
 }
