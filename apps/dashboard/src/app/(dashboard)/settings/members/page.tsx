@@ -66,6 +66,9 @@ export default function MembersPage() {
   const [editRole, setEditRole] = useState('');
   const [editAllAgents, setEditAllAgents] = useState(false);
   const [editAgentIds, setEditAgentIds] = useState<string[]>([]);
+  const [editWhatsappIds, setEditWhatsappIds] = useState<string[]>([]);
+  const [editPipeline, setEditPipeline] = useState({ can_view: true, can_move: true, can_create: false, can_delete: false });
+  const [whatsappInstances, setWhatsappInstances] = useState<{ id: string; instance_name: string }[]>([]);
 
   useEffect(() => {
     if (currentOrg?.id) loadData();
@@ -73,12 +76,14 @@ export default function MembersPage() {
 
   async function loadData() {
     try {
-      const [membersData, agentsData] = await Promise.all([
+      const [membersData, agentsData, waData] = await Promise.all([
         api.get<Member[]>('/profiles/organization'),
         api.get<Agent[]>('/agents'),
+        api.get<{ id: string; instance_name: string }[]>('/whatsapp/instances').catch(() => []),
       ]);
       setMembers(membersData);
       setAgents(agentsData);
+      setWhatsappInstances(waData);
     } catch {
       setMembers([]);
       setAgents([]);
@@ -122,11 +127,19 @@ export default function MembersPage() {
 
     setSaving(true);
     try {
-      await api.put(`/organizations/${currentOrg.id}/members/${editingMember.user_id || editingMember.id}`, {
-        role: editRole,
-        all_agents: editRole === 'company_admin' ? true : editAllAgents,
-        agent_ids: (!editAllAgents && editRole !== 'company_admin') ? editAgentIds : undefined,
-      });
+      const userId = editingMember.user_id || editingMember.id;
+      await Promise.all([
+        api.put(`/organizations/${currentOrg.id}/members/${userId}`, {
+          role: editRole,
+          all_agents: editRole === 'company_admin' ? true : editAllAgents,
+          agent_ids: (!editAllAgents && editRole !== 'company_admin') ? editAgentIds : undefined,
+        }),
+        api.put(`/organizations/${currentOrg.id}/members/${userId}/whatsapp`, {
+          whatsapp_instance_ids: editWhatsappIds,
+        }),
+        api.put(`/organizations/${currentOrg.id}/members/${userId}/pipeline`, editPipeline),
+      ]);
+      setMessage('Membro atualizado!');
       setEditingMember(null);
       loadData();
     } catch (err: any) {
@@ -148,11 +161,25 @@ export default function MembersPage() {
     }
   }
 
-  function startEdit(member: Member) {
+  async function startEdit(member: Member) {
     setEditingMember(member);
-    setEditRole(member.role);
+    setEditRole(member.role === 'admin' ? 'company_admin' : member.role === 'operator' ? 'attendant' : member.role);
     setEditAllAgents(false);
     setEditAgentIds([]);
+    setEditWhatsappIds([]);
+    setEditPipeline({ can_view: true, can_move: true, can_create: false, can_delete: false });
+
+    if (currentOrg?.id) {
+      const userId = member.user_id || member.id;
+      try {
+        const [waAccess, pipeAccess] = await Promise.all([
+          api.get<string[]>(`/organizations/${currentOrg.id}/members/${userId}/whatsapp`).catch(() => []),
+          api.get<any>(`/organizations/${currentOrg.id}/members/${userId}/pipeline`).catch(() => null),
+        ]);
+        setEditWhatsappIds(waAccess || []);
+        if (pipeAccess) setEditPipeline(pipeAccess);
+      } catch {}
+    }
   }
 
   function toggleAgent(agentId: string, list: string[], setter: (v: string[]) => void) {
@@ -365,6 +392,56 @@ export default function MembersPage() {
                             ))}
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {/* WhatsApp */}
+                    {editRole !== 'company_admin' && whatsappInstances.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-dark-400 uppercase tracking-wide">WhatsApp</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+                          {whatsappInstances.map((wa) => (
+                            <label
+                              key={wa.id}
+                              className={`flex items-center gap-1.5 p-1.5 rounded border text-xs cursor-pointer ${
+                                editWhatsappIds.includes(wa.id) ? 'border-green-500 bg-green-500/5' : 'border-dark-700/50'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={editWhatsappIds.includes(wa.id)}
+                                onChange={() => toggleAgent(wa.id, editWhatsappIds, setEditWhatsappIds)}
+                                className="rounded border-dark-600 text-green-400 w-3 h-3"
+                              />
+                              <span className="truncate">{wa.instance_name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pipeline */}
+                    {editRole !== 'company_admin' && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-dark-400 uppercase tracking-wide">Pipeline</p>
+                        <div className="flex flex-wrap gap-3">
+                          {[
+                            { key: 'can_view', label: 'Visualizar' },
+                            { key: 'can_move', label: 'Mover leads' },
+                            { key: 'can_create', label: 'Criar leads' },
+                            { key: 'can_delete', label: 'Excluir leads' },
+                          ].map((perm) => (
+                            <label key={perm.key} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={(editPipeline as any)[perm.key]}
+                                onChange={(e) => setEditPipeline({ ...editPipeline, [perm.key]: e.target.checked })}
+                                className="rounded border-dark-600 text-brand-400 w-3 h-3"
+                              />
+                              {perm.label}
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     )}
 
