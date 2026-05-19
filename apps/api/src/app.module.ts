@@ -16,6 +16,7 @@ import { AccessLevelsModule } from './modules/access-levels/access-levels.module
 import { AgentMembersModule } from './modules/agent-members/agent-members.module';
 import { ScheduledMessagesModule } from './modules/scheduled-messages/scheduled-messages.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
+import { LeadsModule } from './modules/leads/leads.module';
 import { appConfig } from './config/app.config';
 import { redisConfig } from './config/redis.config';
 
@@ -48,6 +49,7 @@ import { redisConfig } from './config/redis.config';
     AgentMembersModule,
     ScheduledMessagesModule,
     MetricsModule,
+    LeadsModule,
     OrganizationsModule,
     AgentsModule,
     ConversationsModule,

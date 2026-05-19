@@ -21,6 +21,9 @@ export function useApiClient() {
     put: <T = any>(path: string, body?: unknown) =>
       api<T>(path, { method: 'PUT', token, orgId, body: body ? JSON.stringify(body) : undefined }),
 
+    patch: <T = any>(path: string, body?: unknown) =>
+      api<T>(path, { method: 'PATCH', token, orgId, body: body ? JSON.stringify(body) : undefined }),
+
     delete: <T = any>(path: string) =>
       api<T>(path, { method: 'DELETE', token, orgId }),
   };

@@ -7,6 +7,7 @@ const navItems = [
   { href: '/', label: 'Dashboard', icon: DashboardIcon },
   { href: '/agents', label: 'Agentes', icon: AgentsIcon },
   { href: '/whatsapp', label: 'WhatsApp', icon: WhatsappIcon },
+  { href: '/pipeline', label: 'Pipeline', icon: PipelineIcon },
   { href: '/conversations', label: 'Conversas', icon: ConversationsIcon },
   { href: '/knowledge-base', label: 'Conhecimento', icon: KnowledgeIcon },
   { href: '/settings', label: 'Configurações', icon: SettingsIcon },
@@ -119,6 +120,16 @@ function WhatsappIcon({ active }: { active: boolean }) {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={active ? 'text-brand-500' : 'text-current'}>
       <path d="M8 1.5A6.5 6.5 0 001.5 8c0 1.14.29 2.21.81 3.15L1.5 14.5l3.35-.81A6.5 6.5 0 108 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M5.5 6.5c.2-.5.5-.8.8-.8.2 0 .3.1.4.1l.5 1.2c.1.1 0 .3-.1.4l-.3.3c-.1.1-.1.2 0 .4.3.5.7.9 1.2 1.2.1.1.3.1.4 0l.3-.3c.1-.1.3-.1.4-.1l1.2.5c.1.1.2.2.1.4 0 .3-.3.6-.8.8-.7.2-1.5 0-2.3-.5-.8-.6-1.5-1.3-1.8-2.2-.3-.8-.3-1.5-.1-2.2z" stroke="currentColor" strokeWidth="1" />
+    </svg>
+  );
+}
+
+function PipelineIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={active ? 'text-brand-500' : 'text-current'}>
+      <rect x="1.5" y="3" width="3" height="10" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="6.5" y="5" width="3" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="11.5" y="7" width="3" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
