@@ -197,10 +197,13 @@ export default function AgentsPage() {
                               method: 'POST',
                               token: session!.access_token,
                               orgId: currentOrg!.id,
+                              body: JSON.stringify({}),
                             });
                             mutate();
                             router.push(`/agents/${duplicated.id}`);
-                          } catch {}
+                          } catch (err: any) {
+                            alert(err?.message || 'Erro ao duplicar agente');
+                          }
                         }}>
                           Duplicar
                         </Button>
