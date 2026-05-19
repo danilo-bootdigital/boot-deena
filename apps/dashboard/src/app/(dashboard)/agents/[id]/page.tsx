@@ -127,11 +127,11 @@ export default function AgentEditPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-500">Carregando agente...</div>;
+    return <div className="text-center py-12 text-dark-400">Carregando agente...</div>;
   }
 
   if (!agent) {
-    return <div className="text-center py-12 text-red-500">{error || 'Agente não encontrado'}</div>;
+    return <div className="text-center py-12 text-red-400">{error || 'Agente não encontrado'}</div>;
   }
 
   const tabs: { key: Tab; label: string }[] = [
@@ -147,14 +147,14 @@ export default function AgentEditPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/agents')} className="text-gray-500 hover:text-gray-700">
+          <button onClick={() => router.push('/agents')} className="text-dark-400 hover:text-dark-200">
             ← Voltar
           </button>
           <input
             type="text"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="text-2xl font-bold text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none px-1 py-0.5 transition-colors"
+            className="text-2xl font-bold text-dark-50 bg-transparent border-b border-transparent hover:border-dark-600 focus:border-brand-500 focus:outline-none px-1 py-0.5 transition-colors"
             placeholder="Nome do Agente"
           />
         </div>
@@ -168,13 +168,13 @@ export default function AgentEditPage() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-500 bg-red-50 p-3 rounded-lg">{error}</p>}
-      {success && <p className="text-sm text-green-600 bg-green-50 p-3 rounded-lg">{success}</p>}
+      {error && <p className="text-sm text-red-400 bg-red-500/5 p-3 rounded-lg">{error}</p>}
+      {success && <p className="text-sm text-accent-500 bg-green-50 p-3 rounded-lg">{success}</p>}
 
       {showDeleteConfirm && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-500/20 bg-red-500/5">
           <CardContent>
-            <p className="text-sm text-red-700 mb-3">Tem certeza que deseja excluir este agente? Esta ação não pode ser desfeita.</p>
+            <p className="text-sm text-red-400 mb-3">Tem certeza que deseja excluir este agente? Esta ação não pode ser desfeita.</p>
             <div className="flex gap-2">
               <Button variant="danger" size="sm" onClick={handleDelete}>Sim, excluir</Button>
               <Button variant="secondary" size="sm" onClick={() => setShowDeleteConfirm(false)}>Cancelar</Button>
@@ -183,15 +183,15 @@ export default function AgentEditPage() {
         </Card>
       )}
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-dark-700/50">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-blue-600 text-brand-400'
+                : 'border-transparent text-dark-400 hover:text-dark-200'
             }`}
           >
             {tab.label}
@@ -201,7 +201,7 @@ export default function AgentEditPage() {
 
       {activeTab === 'flow' && (
         <div>
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-dark-400 mb-3">
             Monte o fluxo de atendimento do agente. Arraste os blocos da barra superior e conecte-os para definir o comportamento.
           </p>
           <FlowEditor
@@ -235,7 +235,7 @@ export default function AgentEditPage() {
 
       {activeTab === 'test' && (
         <div>
-          <p className="text-sm text-gray-500 mb-3">
+          <p className="text-sm text-dark-400 mb-3">
             Simule uma conversa com o agente para testar o comportamento. O histórico não é salvo.
           </p>
           <ChatTest
@@ -264,9 +264,9 @@ export default function AgentEditPage() {
               />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Provedor</label>
+                  <label className="block text-sm font-medium text-dark-200">Provedor</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-dark-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={form.provider}
                     onChange={(e) => setForm({ ...form, provider: e.target.value })}
                   >
@@ -275,9 +275,9 @@ export default function AgentEditPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Modelo</label>
+                  <label className="block text-sm font-medium text-dark-200">Modelo</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-dark-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={form.model}
                     onChange={(e) => setForm({ ...form, model: e.target.value })}
                   >
@@ -297,7 +297,7 @@ export default function AgentEditPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-dark-200">
                     Temperatura ({form.temperature})
                   </label>
                   <input
@@ -309,43 +309,43 @@ export default function AgentEditPage() {
                     onChange={(e) => setForm({ ...form, temperature: parseFloat(e.target.value) })}
                     className="w-full"
                   />
-                  <p className="text-xs text-gray-400">0 = preciso, 2 = criativo</p>
+                  <p className="text-xs text-dark-500">0 = preciso, 2 = criativo</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Max Tokens</label>
+                  <label className="block text-sm font-medium text-dark-200">Max Tokens</label>
                   <input
                     type="number"
                     min="100"
                     max="8192"
                     value={form.max_tokens}
                     onChange={(e) => setForm({ ...form, max_tokens: parseInt(e.target.value) || 1024 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-dark-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   />
-                  <p className="text-xs text-gray-400">Tamanho máximo da resposta</p>
+                  <p className="text-xs text-dark-500">Tamanho máximo da resposta</p>
                 </div>
               </div>
 
               {/* Configurações de Voz */}
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">🎙️ Resposta por Voz (TTS)</h3>
+              <div className="border-t border-dark-700/50 pt-4 mt-4">
+                <h3 className="text-sm font-semibold text-dark-200 mb-3">🎙️ Resposta por Voz (TTS)</h3>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={form.voice_enabled}
                       onChange={(e) => setForm({ ...form, voice_enabled: e.target.checked })}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                      className="rounded border-dark-600 text-brand-400 focus:ring-brand-500/40 w-4 h-4"
                     />
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Responder com áudio</span>
-                      <p className="text-xs text-gray-400">O agente envia a resposta como mensagem de voz no WhatsApp</p>
+                      <span className="text-sm font-medium text-dark-200">Responder com áudio</span>
+                      <p className="text-xs text-dark-500">O agente envia a resposta como mensagem de voz no WhatsApp</p>
                     </div>
                   </label>
                   {form.voice_enabled && (
                     <div className="space-y-1 ml-7">
-                      <label className="block text-sm font-medium text-gray-700">Voz</label>
+                      <label className="block text-sm font-medium text-dark-200">Voz</label>
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-dark-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                         value={form.voice_id}
                         onChange={(e) => setForm({ ...form, voice_id: e.target.value })}
                       >
@@ -356,7 +356,7 @@ export default function AgentEditPage() {
                         <option value="onyx">Onyx (masculina, grave)</option>
                         <option value="shimmer">Shimmer (feminina, suave)</option>
                       </select>
-                      <p className="text-xs text-gray-400">Áudios recebidos são sempre transcritos automaticamente, independente desta opção.</p>
+                      <p className="text-xs text-dark-500">Áudios recebidos são sempre transcritos automaticamente, independente desta opção.</p>
                     </div>
                   )}
                 </div>
@@ -370,7 +370,7 @@ export default function AgentEditPage() {
         <Card>
           <CardContent>
             <div className="space-y-3 py-2">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-dark-400">
                 O prompt do sistema define o comportamento e o fluxo de atendimento do agente. 
                 Aqui você configura todas as etapas, regras e instruções.
               </p>
@@ -382,7 +382,7 @@ export default function AgentEditPage() {
                 placeholder="Instruções completas para o agente..."
                 required
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-dark-500">
                 {form.system_prompt.length} caracteres
               </p>
             </div>
@@ -399,9 +399,9 @@ export default function AgentEditPage() {
           <CardContent>
             <div className="space-y-4 py-2">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Status do Agente</label>
+                <label className="block text-sm font-medium text-dark-200">Status do Agente</label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-dark-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                 >
@@ -410,12 +410,12 @@ export default function AgentEditPage() {
                   <option value="draft">Rascunho</option>
                 </select>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 space-y-2">
+              <div className="bg-dark-900/40 p-4 rounded-lg text-sm text-dark-300 space-y-2">
                 <p><strong>Ativo:</strong> O agente responde mensagens automaticamente.</p>
                 <p><strong>Inativo:</strong> O agente está pausado e não responde.</p>
                 <p><strong>Rascunho:</strong> O agente está em configuração e não está disponível.</p>
               </div>
-              <div className="text-xs text-gray-400 space-y-1">
+              <div className="text-xs text-dark-500 space-y-1">
                 <p>Criado em: {agent.created_at ? new Date(agent.created_at).toLocaleString('pt-BR') : '-'}</p>
                 <p>Atualizado em: {agent.updated_at ? new Date(agent.updated_at).toLocaleString('pt-BR') : '-'}</p>
               </div>

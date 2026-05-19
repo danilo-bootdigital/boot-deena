@@ -1,5 +1,5 @@
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -11,20 +11,21 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
+    primary: 'bg-brand-500 text-white hover:bg-brand-400 shadow-[0_0_20px_rgba(37,99,255,0.15)]',
+    secondary: 'bg-dark-700 text-dark-100 hover:bg-dark-600 border border-dark-600',
+    danger: 'bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20',
+    ghost: 'text-dark-200 hover:text-dark-50 hover:bg-dark-700/50',
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
+    sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    lg: 'px-6 py-2.5 text-sm',
   };
 
   return (
     <button
-      className={`rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`rounded-lg font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}

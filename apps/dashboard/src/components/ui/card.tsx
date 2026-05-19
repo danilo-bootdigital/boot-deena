@@ -5,7 +5,7 @@ interface CardProps {
 
 export function Card({ children, className = '' }: CardProps) {
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>
+    <div className={`bg-dark-800/50 rounded-xl border border-dark-700/50 backdrop-blur-sm ${className}`}>
       {children}
     </div>
   );
@@ -13,12 +13,12 @@ export function Card({ children, className = '' }: CardProps) {
 
 export function CardHeader({ children, className = '' }: CardProps) {
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>
+    <div className={`px-6 py-4 border-b border-dark-700/50 ${className}`}>
       {children}
     </div>
   );
 }
 
 export function CardContent({ children, className = '' }: CardProps) {
-  return <div className={`px-6 py-4 ${className}`}>{children}</div>;
+  return <div className={`px-6 py-5 ${className}`}>{children}</div>;
 }

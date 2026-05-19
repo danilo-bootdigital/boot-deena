@@ -35,8 +35,8 @@ const ROLE_TYPE_LABELS: Record<string, string> = {
 
 const ROLE_TYPE_COLORS: Record<string, string> = {
   owner: 'bg-purple-100 text-purple-800',
-  manager: 'bg-blue-100 text-blue-800',
-  team: 'bg-gray-100 text-gray-800',
+  manager: 'bg-brand-500/10 text-blue-800',
+  team: 'bg-dark-800 text-dark-100',
 };
 
 interface Props {
@@ -122,7 +122,7 @@ export function AgentTeamTab({ agentId }: Props) {
   }
 
   if (loading) {
-    return <div className="text-gray-500 py-4">Carregando equipe...</div>;
+    return <div className="text-dark-400 py-4">Carregando equipe...</div>;
   }
 
   return (
@@ -132,15 +132,15 @@ export function AgentTeamTab({ agentId }: Props) {
           <h2 className="text-lg font-semibold">Vincular Usuário ao Agente</h2>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-dark-400 mb-4">
             Defina quem pode gerenciar, operar ou visualizar este agente e qual o papel na equipe.
           </p>
           <form onSubmit={handleAssign} className="space-y-3">
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+                <label className="block text-sm font-medium text-dark-200 mb-1">Usuário</label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
                   required
@@ -154,9 +154,9 @@ export function AgentTeamTab({ agentId }: Props) {
                 </select>
               </div>
               <div className="w-44">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Papel na Equipe</label>
+                <label className="block text-sm font-medium text-dark-200 mb-1">Papel na Equipe</label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={selectedRoleType}
                   onChange={(e) => setSelectedRoleType(e.target.value)}
                 >
@@ -166,9 +166,9 @@ export function AgentTeamTab({ agentId }: Props) {
                 </select>
               </div>
               <div className="w-36">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Permissão</label>
+                <label className="block text-sm font-medium text-dark-200 mb-1">Permissão</label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={selectedPermission}
                   onChange={(e) => setSelectedPermission(e.target.value)}
                 >
@@ -183,7 +183,7 @@ export function AgentTeamTab({ agentId }: Props) {
             </Button>
           </form>
           {message && (
-            <p className={`mt-3 text-sm ${message.includes('vinculado') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`mt-3 text-sm ${message.includes('vinculado') ? 'text-accent-500' : 'text-red-400'}`}>
               {message}
             </p>
           )}
@@ -199,11 +199,11 @@ export function AgentTeamTab({ agentId }: Props) {
             {members.map((member) => (
               <div key={member.id} className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
+                  <div className="w-9 h-9 rounded-full bg-dark-700 flex items-center justify-center text-sm font-medium text-dark-300">
                     {(member.profiles?.display_name || member.profiles?.full_name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-dark-50">
                       {member.profiles?.display_name || member.profiles?.full_name || 'Usuário'}
                     </p>
                     <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${ROLE_TYPE_COLORS[member.role_type] || ROLE_TYPE_COLORS.team}`}>
@@ -213,7 +213,7 @@ export function AgentTeamTab({ agentId }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <select
-                    className="rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="rounded-md border border-dark-600 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={member.role_type}
                     onChange={(e) => handleUpdate(member.user_id, 'role_type', e.target.value)}
                   >
@@ -222,7 +222,7 @@ export function AgentTeamTab({ agentId }: Props) {
                     <option value="team">Equipe</option>
                   </select>
                   <select
-                    className="rounded-md border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="rounded-md border border-dark-600 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={member.permission}
                     onChange={(e) => handleUpdate(member.user_id, 'permission', e.target.value)}
                   >
@@ -232,7 +232,7 @@ export function AgentTeamTab({ agentId }: Props) {
                   </select>
                   <button
                     onClick={() => handleRemove(member.user_id)}
-                    className="text-xs text-red-500 hover:text-red-700"
+                    className="text-xs text-red-400 hover:text-red-700"
                   >
                     Remover
                   </button>
@@ -240,7 +240,7 @@ export function AgentTeamTab({ agentId }: Props) {
               </div>
             ))}
             {members.length === 0 && (
-              <p className="text-sm text-gray-500 py-4 text-center">
+              <p className="text-sm text-dark-400 py-4 text-center">
                 Nenhum membro vinculado a este agente.
               </p>
             )}
@@ -248,7 +248,7 @@ export function AgentTeamTab({ agentId }: Props) {
         </CardContent>
       </Card>
 
-      <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 space-y-1">
+      <div className="bg-dark-900/40 p-4 rounded-lg text-sm text-dark-300 space-y-1">
         <p><strong>Responsável Principal:</strong> Dono do agente. Tem controle total sobre configurações e equipe.</p>
         <p><strong>Gerente Vinculado:</strong> Gerencia o agente e seus atendentes. Pode editar configurações.</p>
         <p><strong>Equipe Autorizada:</strong> Pode operar/visualizar o agente conforme a permissão definida.</p>

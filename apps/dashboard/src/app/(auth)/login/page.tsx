@@ -35,7 +35,7 @@ export default function LoginPage() {
     <Card>
       <CardHeader>
         <h1 className="text-2xl font-bold text-center">Agente IA</h1>
-        <p className="text-sm text-gray-500 text-center">Entre na sua conta</p>
+        <p className="text-sm text-dark-400 text-center">Entre na sua conta</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,14 +53,14 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
-        <p className="text-sm text-center mt-4 text-gray-500">
+        <p className="text-sm text-center mt-4 text-dark-400">
           Não tem conta?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-brand-400 hover:underline">
             Criar conta
           </Link>
         </p>

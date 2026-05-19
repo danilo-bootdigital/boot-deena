@@ -27,7 +27,7 @@ const settingsItems = [
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Configurações</h1>
+      <h1 className="text-2xl font-bold text-dark-50">Configurações</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {settingsItems.map((item) => (
@@ -35,8 +35,8 @@ export default function SettingsPage() {
             <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
               <CardContent className="p-6">
                 <div className="text-3xl mb-3">{item.icon}</div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">{item.title}</h2>
-                <p className="text-sm text-gray-500">{item.description}</p>
+                <h2 className="text-lg font-semibold text-dark-50 mb-1">{item.title}</h2>
+                <p className="text-sm text-dark-400">{item.description}</p>
               </CardContent>
             </Card>
           </Link>

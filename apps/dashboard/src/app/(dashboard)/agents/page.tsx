@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { useAuth, useApi } from '@/hooks/use-auth';
@@ -49,8 +49,8 @@ export default function AgentsPage() {
     setLoading(true);
     setError('');
     try {
-      if (!session?.access_token) throw new Error('Não autenticado. Faça login novamente.');
-      if (!currentOrg?.id) throw new Error('Carregando organização... tente novamente em instantes.');
+      if (!session?.access_token) throw new Error('Não autenticado.');
+      if (!currentOrg?.id) throw new Error('Carregando organização...');
       await api('/agents', {
         method: 'POST',
         token: session.access_token,
@@ -67,12 +67,23 @@ export default function AgentsPage() {
     }
   }
 
+  const statusColors: Record<string, string> = {
+    active: 'bg-accent-500/10 text-accent-500',
+    inactive: 'bg-dark-600 text-dark-300',
+    draft: 'bg-yellow-500/10 text-yellow-400',
+  };
+  const statusLabels: Record<string, string> = {
+    active: 'Ativo',
+    inactive: 'Inativo',
+    draft: 'Rascunho',
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Agentes</h1>
+        <h1 className="text-2xl font-semibold text-dark-50 tracking-tight">Agentes</h1>
         {canCreate && (
-          <Button onClick={() => setShowForm(!showForm)}>
+          <Button onClick={() => setShowForm(!showForm)} variant={showForm ? 'ghost' : 'primary'}>
             {showForm ? 'Cancelar' : 'Novo Agente'}
           </Button>
         )}
@@ -80,9 +91,6 @@ export default function AgentsPage() {
 
       {showForm && canCreate && (
         <Card>
-          <CardHeader>
-            <p className="text-sm text-gray-500">Criar novo agente de IA</p>
-          </CardHeader>
           <CardContent>
             <form onSubmit={handleCreate} className="space-y-4">
               <Input
@@ -93,7 +101,7 @@ export default function AgentsPage() {
                 required
               />
               <Input
-                label="Descrição (opcional)"
+                label="Descrição"
                 placeholder="Breve descrição do agente"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -107,10 +115,10 @@ export default function AgentsPage() {
                 required
               />
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Provedor</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-dark-200 uppercase tracking-wide">Provedor</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={form.provider}
                     onChange={(e) => setForm({ ...form, provider: e.target.value as any })}
                   >
@@ -118,10 +126,10 @@ export default function AgentsPage() {
                     <option value="anthropic">Anthropic</option>
                   </select>
                 </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Modelo</label>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-dark-200 uppercase tracking-wide">Modelo</label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-sm text-dark-50 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                     value={form.model}
                     onChange={(e) => setForm({ ...form, model: e.target.value })}
                   >
@@ -139,14 +147,13 @@ export default function AgentsPage() {
                   </select>
                 </div>
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-xs text-red-400">{error}</p>}
               {orgError && (
                 <div className="flex items-center gap-2">
-                  <p className="text-sm text-red-500">{orgError}</p>
-                  <button type="button" onClick={retryOrg} className="text-sm text-blue-600 underline">Tentar novamente</button>
+                  <p className="text-xs text-red-400">{orgError}</p>
+                  <button type="button" onClick={retryOrg} className="text-xs text-brand-400 underline">Tentar novamente</button>
                 </div>
               )}
-              {orgLoading && <p className="text-sm text-yellow-600">Carregando organização...</p>}
               <Button type="submit" disabled={loading || orgLoading || !currentOrg}>
                 {loading ? 'Criando...' : 'Criar Agente'}
               </Button>
@@ -156,42 +163,31 @@ export default function AgentsPage() {
       )}
 
       {agents && agents.length > 0 ? (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {agents.map((agent) => {
-            const statusColors: Record<string, string> = {
-              active: 'bg-green-100 text-green-700',
-              inactive: 'bg-gray-100 text-gray-600',
-              draft: 'bg-yellow-100 text-yellow-700',
-            };
-            const statusLabels: Record<string, string> = {
-              active: 'Ativo',
-              inactive: 'Inativo',
-              draft: 'Rascunho',
-            };
             const status = agent.status || 'draft';
-
             return (
-              <Card key={agent.id}>
-                <CardContent className="py-4">
+              <Card key={agent.id} className="hover:border-dark-600/80 transition-colors">
+                <CardContent>
                   <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-medium text-gray-900">{agent.name}</h3>
-                        <span className={`px-2 py-0.5 text-xs rounded-full ${statusColors[status]}`}>
+                        <h3 className="text-sm font-medium text-dark-50">{agent.name}</h3>
+                        <span className={`px-2 py-0.5 text-[10px] rounded-md font-medium ${statusColors[status] || statusColors.draft}`}>
                           {statusLabels[status] || status}
                         </span>
                       </div>
-                      {agent.description && <p className="text-sm text-gray-500 mt-1">{agent.description}</p>}
-                      <p className="text-xs text-gray-400 mt-1">{agent.provider} / {agent.model}</p>
+                      {agent.description && <p className="text-xs text-dark-400 mt-1 truncate">{agent.description}</p>}
+                      <p className="text-[11px] text-dark-500 mt-1 font-mono">{agent.provider}/{agent.model}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-4">
                       {canEdit && (
                         <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
                           Editar
                         </Button>
                       )}
                       {canCreate && (
-                        <Button size="sm" variant="secondary" onClick={async () => {
+                        <Button size="sm" variant="ghost" onClick={async () => {
                           try {
                             const duplicated = await api<Agent>(`/agents/${agent.id}/duplicate`, {
                               method: 'POST',
@@ -202,26 +198,22 @@ export default function AgentsPage() {
                             mutate();
                             router.push(`/agents/${duplicated.id}`);
                           } catch (err: any) {
-                            alert(err?.message || 'Erro ao duplicar agente');
+                            alert(err?.message || 'Erro ao duplicar');
                           }
                         }}>
                           Duplicar
                         </Button>
                       )}
                       {!canEdit && (
-                        <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
-                          Visualizar
+                        <Button size="sm" variant="ghost" onClick={() => router.push(`/agents/${agent.id}`)}>
+                          Ver
                         </Button>
                       )}
                       {canDelete && (
                         <Button size="sm" variant="danger" onClick={async () => {
-                          if (!confirm('Tem certeza que deseja excluir este agente?')) return;
+                          if (!confirm('Excluir este agente?')) return;
                           try {
-                            await api(`/agents/${agent.id}`, {
-                              method: 'DELETE',
-                              token: session!.access_token,
-                              orgId: currentOrg!.id,
-                            });
+                            await api(`/agents/${agent.id}`, { method: 'DELETE', token: session!.access_token, orgId: currentOrg!.id });
                             mutate();
                           } catch {}
                         }}>
@@ -238,12 +230,10 @@ export default function AgentsPage() {
       ) : !showForm && (
         <Card>
           <CardContent>
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-lg">Nenhum agente criado ainda</p>
-              <p className="text-sm mt-2">
-                {canCreate
-                  ? 'Crie seu primeiro agente para começar a atender no WhatsApp'
-                  : 'Nenhum agente vinculado ao seu usuário. Solicite acesso ao administrador.'}
+            <div className="text-center py-16">
+              <p className="text-sm text-dark-300">Nenhum agente criado</p>
+              <p className="text-xs text-dark-500 mt-2">
+                {canCreate ? 'Crie seu primeiro agente para começar' : 'Solicite acesso ao administrador.'}
               </p>
             </div>
           </CardContent>

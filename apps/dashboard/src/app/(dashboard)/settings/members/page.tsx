@@ -31,10 +31,10 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  owner: 'bg-purple-100 text-purple-800',
-  admin: 'bg-purple-100 text-purple-800',
-  manager: 'bg-blue-100 text-blue-800',
-  operator: 'bg-green-100 text-green-800',
+  owner: 'bg-purple-500/10 text-purple-400',
+  admin: 'bg-purple-500/10 text-purple-400',
+  manager: 'bg-brand-500/10 text-brand-400',
+  operator: 'bg-accent-500/10 text-accent-500',
 };
 
 export default function MembersPage() {
@@ -157,18 +157,18 @@ export default function MembersPage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Carregando membros...</div>;
+    return <div className="p-6 text-dark-400">Carregando membros...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Membros da Organização</h1>
+      <h1 className="text-2xl font-bold text-dark-50">Membros da Organização</h1>
 
       {/* Formulário de cadastro */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Cadastrar Novo Membro</h2>
-          <p className="text-sm text-gray-500">Crie uma conta de acesso para um novo membro da equipe</p>
+          <p className="text-sm text-dark-400">Crie uma conta de acesso para um novo membro da equipe</p>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleCreate} className="space-y-4">
@@ -197,9 +197,9 @@ export default function MembersPage() {
                 placeholder="Mínimo 6 caracteres"
               />
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Nível de Acesso</label>
+                <label className="block text-sm font-medium text-dark-200">Nível de Acesso</label>
                 <select
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={formRole}
                   onChange={(e) => {
                     setFormRole(e.target.value);
@@ -214,15 +214,15 @@ export default function MembersPage() {
             </div>
 
             {formRole !== 'admin' && (
-              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                <label className="block text-sm font-semibold text-gray-700">Acesso a Agentes</label>
+              <div className="bg-dark-900/40 p-4 rounded-lg space-y-3">
+                <label className="block text-sm font-semibold text-dark-200">Acesso a Agentes</label>
                 <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={allAgents} onChange={() => setAllAgents(true)} className="text-blue-600" />
+                    <input type="radio" checked={allAgents} onChange={() => setAllAgents(true)} className="text-brand-400" />
                     Todos os agentes
                   </label>
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="radio" checked={!allAgents} onChange={() => setAllAgents(false)} className="text-blue-600" />
+                    <input type="radio" checked={!allAgents} onChange={() => setAllAgents(false)} className="text-brand-400" />
                     Agentes específicos
                   </label>
                 </div>
@@ -232,26 +232,26 @@ export default function MembersPage() {
                       <label
                         key={agent.id}
                         className={`flex items-center gap-2 p-2 rounded border text-sm cursor-pointer transition-colors ${
-                          selectedAgentIds.includes(agent.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                          selectedAgentIds.includes(agent.id) ? 'border-brand-500 bg-brand-500/5' : 'border-dark-700/50 hover:border-dark-600'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedAgentIds.includes(agent.id)}
                           onChange={() => toggleAgent(agent.id, selectedAgentIds, setSelectedAgentIds)}
-                          className="rounded border-gray-300 text-blue-600"
+                          className="rounded border-dark-600 text-brand-400"
                         />
                         <span className="truncate">{agent.name}</span>
                       </label>
                     ))}
-                    {agents.length === 0 && <p className="text-xs text-gray-400 col-span-full">Nenhum agente criado.</p>}
+                    {agents.length === 0 && <p className="text-xs text-dark-500 col-span-full">Nenhum agente criado.</p>}
                   </div>
                 )}
               </div>
             )}
 
             {message && (
-              <p className={`text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>
+              <p className={`text-sm ${message.includes('sucesso') ? 'text-accent-500' : 'text-red-400'}`}>{message}</p>
             )}
 
             <Button type="submit" disabled={saving}>
@@ -272,14 +272,14 @@ export default function MembersPage() {
               <div key={member.id} className="py-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
+                    <div className="w-10 h-10 rounded-full bg-dark-700 flex items-center justify-center text-sm font-medium text-dark-300">
                       {(member.display_name || member.full_name || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-dark-50">
                         {member.display_name || member.full_name || 'Sem nome'}
                       </p>
-                      {member.job_title && <p className="text-xs text-gray-500">{member.job_title}</p>}
+                      {member.job_title && <p className="text-xs text-dark-400">{member.job_title}</p>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -290,13 +290,13 @@ export default function MembersPage() {
                       <>
                         <button
                           onClick={() => startEdit(member)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-xs text-brand-400 hover:text-brand-400 font-medium"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => handleRemove(member.id)}
-                          className="text-xs text-red-500 hover:text-red-700"
+                          className="text-xs text-red-400 hover:text-red-400"
                         >
                           Remover
                         </button>
@@ -307,12 +307,12 @@ export default function MembersPage() {
 
                 {/* Painel de edição inline */}
                 {editingMember?.id === member.id && (
-                  <div className="mt-3 ml-13 p-4 bg-gray-50 rounded-lg space-y-3">
+                  <div className="mt-3 ml-13 p-4 bg-dark-900/40 rounded-lg space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="space-y-1">
-                        <label className="block text-xs font-medium text-gray-600">Nível de Acesso</label>
+                        <label className="block text-xs font-medium text-dark-300">Nível de Acesso</label>
                         <select
-                          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                          className="rounded-md border border-dark-600 px-3 py-1.5 text-sm"
                           value={editRole}
                           onChange={(e) => setEditRole(e.target.value)}
                         >
@@ -327,11 +327,11 @@ export default function MembersPage() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-4">
                           <label className="flex items-center gap-2 text-xs cursor-pointer">
-                            <input type="radio" checked={editAllAgents} onChange={() => setEditAllAgents(true)} className="text-blue-600" />
+                            <input type="radio" checked={editAllAgents} onChange={() => setEditAllAgents(true)} className="text-brand-400" />
                             Todos os agentes
                           </label>
                           <label className="flex items-center gap-2 text-xs cursor-pointer">
-                            <input type="radio" checked={!editAllAgents} onChange={() => setEditAllAgents(false)} className="text-blue-600" />
+                            <input type="radio" checked={!editAllAgents} onChange={() => setEditAllAgents(false)} className="text-brand-400" />
                             Específicos
                           </label>
                         </div>
@@ -341,14 +341,14 @@ export default function MembersPage() {
                               <label
                                 key={agent.id}
                                 className={`flex items-center gap-1.5 p-1.5 rounded border text-xs cursor-pointer ${
-                                  editAgentIds.includes(agent.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                  editAgentIds.includes(agent.id) ? 'border-brand-500 bg-brand-500/5' : 'border-dark-700/50'
                                 }`}
                               >
                                 <input
                                   type="checkbox"
                                   checked={editAgentIds.includes(agent.id)}
                                   onChange={() => toggleAgent(agent.id, editAgentIds, setEditAgentIds)}
-                                  className="rounded border-gray-300 text-blue-600 w-3 h-3"
+                                  className="rounded border-dark-600 text-brand-400 w-3 h-3"
                                 />
                                 <span className="truncate">{agent.name}</span>
                               </label>
@@ -364,7 +364,7 @@ export default function MembersPage() {
                       </Button>
                       <button
                         onClick={() => setEditingMember(null)}
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                        className="px-3 py-1.5 text-sm text-dark-300 hover:text-dark-100"
                       >
                         Cancelar
                       </button>
@@ -374,13 +374,13 @@ export default function MembersPage() {
               </div>
             ))}
             {members.length === 0 && (
-              <p className="text-sm text-gray-500 py-4 text-center">Nenhum membro encontrado.</p>
+              <p className="text-sm text-dark-400 py-4 text-center">Nenhum membro encontrado.</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-600 space-y-2">
+      <div className="bg-dark-900/40 p-4 rounded-lg text-sm text-dark-300 space-y-2">
         <p><strong>Administrador:</strong> Acesso total. Visualiza todos os agentes, membros e configurações.</p>
         <p><strong>Gerente de Conta:</strong> Visualiza e edita apenas os agentes vinculados. Gerencia atendentes dos seus agentes.</p>
         <p><strong>Operador/Atendente:</strong> Acesso limitado. Responde atendimentos e visualiza conversas dos agentes autorizados.</p>

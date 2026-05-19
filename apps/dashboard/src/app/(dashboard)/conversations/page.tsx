@@ -43,10 +43,10 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  open: 'bg-green-100 text-green-700',
-  closed: 'bg-gray-100 text-gray-600',
-  archived: 'bg-yellow-100 text-yellow-700',
-  waiting: 'bg-blue-100 text-blue-700',
+  open: 'bg-accent-500/10 text-accent-500',
+  closed: 'bg-dark-600 text-dark-300',
+  archived: 'bg-yellow-500/10 text-yellow-400',
+  waiting: 'bg-brand-500/10 text-brand-400',
 };
 
 export default function ConversationsPage() {
@@ -112,7 +112,6 @@ export default function ConversationsPage() {
   async function handleSendReply(e: React.FormEvent) {
     e.preventDefault();
     if (!selectedConversation || !replyContent.trim()) return;
-
     setSending(true);
     try {
       const msg = await api.post<Message>(`/conversations/${selectedConversation.id}/messages`, {
@@ -120,9 +119,7 @@ export default function ConversationsPage() {
       });
       setMessages((prev) => [...prev, msg]);
       setReplyContent('');
-    } catch {
-      // silently fail
-    } finally {
+    } catch {} finally {
       setSending(false);
     }
   }
@@ -137,36 +134,30 @@ export default function ConversationsPage() {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
-
-    if (diffHours < 24) {
-      return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    }
-    if (diffHours < 48) {
-      return 'Ontem';
-    }
+    if (diffHours < 24) return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if (diffHours < 48) return 'Ontem';
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
 
   function formatFullDate(dateStr: string) {
     return new Date(dateStr).toLocaleString('pt-BR', {
-      day: '2-digit', month: '2-digit', year: '2-digit',
-      hour: '2-digit', minute: '2-digit',
+      day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit',
     });
   }
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Conversas</h1>
-        <div className="flex gap-2">
+        <h1 className="text-2xl font-semibold text-dark-50 tracking-tight">Conversas</h1>
+        <div className="flex gap-1.5">
           {['', 'open', 'closed', 'archived'].map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all cursor-pointer ${
                 statusFilter === s
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-dark-800 text-dark-300 hover:text-dark-100 border border-dark-700/50'
               }`}
             >
               {s === '' ? 'Todas' : STATUS_LABELS[s] || s}
@@ -176,43 +167,36 @@ export default function ConversationsPage() {
       </div>
 
       <div className="flex flex-1 gap-4 min-h-0">
-        {/* Lista de conversas */}
-        <div className="w-96 flex flex-col border border-gray-200 rounded-lg bg-white overflow-hidden">
-          <form onSubmit={handleSearch} className="p-3 border-b border-gray-100">
-            <Input
-              placeholder="Buscar por nome ou telefone..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+        {/* Conversation List */}
+        <div className="w-80 flex flex-col border border-dark-700/40 rounded-xl bg-dark-900/50 overflow-hidden">
+          <form onSubmit={handleSearch} className="p-3 border-b border-dark-700/30">
+            <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </form>
-
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <p className="text-sm text-gray-400 text-center py-8">Carregando...</p>
+              <p className="text-xs text-dark-500 text-center py-8">Carregando...</p>
             ) : conversations.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-8">Nenhuma conversa encontrada</p>
+              <p className="text-xs text-dark-500 text-center py-8">Nenhuma conversa</p>
             ) : (
               conversations.map((conv) => (
                 <button
                   key={conv.id}
                   onClick={() => selectConversation(conv)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${
-                    selectedConversation?.id === conv.id ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                  className={`w-full text-left px-4 py-3 border-b border-dark-700/20 hover:bg-dark-800/50 transition-colors cursor-pointer ${
+                    selectedConversation?.id === conv.id ? 'bg-dark-800/70 border-l-2 border-l-brand-500' : ''
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 truncate">
+                    <span className="text-sm font-medium text-dark-100 truncate">
                       {conv.contact_push_name || conv.contact_phone}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-[10px] text-dark-500">
                       {conv.last_message_at ? formatTime(conv.last_message_at) : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-xs text-gray-500 truncate">
-                      {conv.agents?.name || 'Sem agente'}
-                    </span>
-                    <span className={`px-1.5 py-0.5 text-[10px] rounded ${STATUS_COLORS[conv.status] || STATUS_COLORS.open}`}>
+                    <span className="text-[11px] text-dark-400 truncate">{conv.agents?.name || 'Sem agente'}</span>
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded font-medium ${STATUS_COLORS[conv.status] || STATUS_COLORS.open}`}>
                       {STATUS_LABELS[conv.status] || conv.status}
                     </span>
                   </div>
@@ -222,25 +206,25 @@ export default function ConversationsPage() {
           </div>
         </div>
 
-        {/* Painel de mensagens */}
-        <div className="flex-1 flex flex-col border border-gray-200 rounded-lg bg-white overflow-hidden">
+        {/* Messages Panel */}
+        <div className="flex-1 flex flex-col border border-dark-700/40 rounded-xl bg-dark-900/30 overflow-hidden">
           {!selectedConversation ? (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
+            <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-lg">Selecione uma conversa</p>
-                <p className="text-sm mt-1">Clique em uma conversa à esquerda para ver o histórico</p>
+                <p className="text-sm text-dark-400">Selecione uma conversa</p>
+                <p className="text-xs text-dark-500 mt-1">Clique à esquerda para ver o histórico</p>
               </div>
             </div>
           ) : (
             <>
-              {/* Header da conversa */}
-              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              {/* Header */}
+              <div className="px-5 py-3 border-b border-dark-700/30 bg-dark-900/60">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-gray-900">
+                    <h2 className="text-sm font-medium text-dark-50">
                       {selectedConversation.contact_push_name || selectedConversation.contact_phone}
                     </h2>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-[11px] text-dark-400">
                       {selectedConversation.contact_phone} · {selectedConversation.agents?.name || 'Sem agente'}
                     </p>
                   </div>
@@ -248,45 +232,36 @@ export default function ConversationsPage() {
                     {attachments.length > 0 && (
                       <button
                         onClick={() => setShowAttachments(!showAttachments)}
-                        className={`px-2 py-1 text-xs rounded-lg font-medium transition-colors ${
-                          showAttachments ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        className={`px-2 py-1 text-[10px] rounded-md font-medium transition-all cursor-pointer ${
+                          showAttachments ? 'bg-brand-500 text-white' : 'bg-dark-700 text-dark-300 border border-dark-600'
                         }`}
                       >
-                        📎 {attachments.length} {attachments.length === 1 ? 'anexo' : 'anexos'}
+                        {attachments.length} anexo{attachments.length > 1 ? 's' : ''}
                       </button>
                     )}
-                    <span className={`px-2 py-1 text-xs rounded-full ${STATUS_COLORS[selectedConversation.status] || STATUS_COLORS.open}`}>
+                    <span className={`px-2 py-1 text-[10px] rounded-md font-medium ${STATUS_COLORS[selectedConversation.status] || STATUS_COLORS.open}`}>
                       {STATUS_LABELS[selectedConversation.status] || selectedConversation.status}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Painel de anexos */}
+              {/* Attachments panel */}
               {showAttachments && (
-                <div className="px-4 py-3 border-b border-gray-200 bg-white max-h-48 overflow-y-auto">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Documentos e Imagens</p>
+                <div className="px-5 py-3 border-b border-dark-700/30 bg-dark-800/40 max-h-40 overflow-y-auto">
                   <div className="space-y-2">
                     {attachments.map((att) => (
-                      <div key={att.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div key={att.id} className="flex items-center justify-between p-2 bg-dark-800 rounded-lg border border-dark-700/50">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">
-                            {att.file_type === 'image' ? '🖼️' : '📄'}
-                          </span>
+                          <span className="text-xs">{att.file_type === 'image' ? '🖼' : '📄'}</span>
                           <div>
-                            <p className="text-sm text-gray-700 truncate max-w-[200px]">{att.file_name}</p>
-                            <p className="text-[10px] text-gray-400">
-                              {att.file_size ? `${(att.file_size / 1024).toFixed(1)} KB` : ''} · {new Date(att.created_at).toLocaleDateString('pt-BR')}
-                            </p>
+                            <p className="text-xs text-dark-100 truncate max-w-[180px]">{att.file_name}</p>
+                            <p className="text-[9px] text-dark-500">{att.file_size ? `${(att.file_size / 1024).toFixed(1)} KB` : ''}</p>
                           </div>
                         </div>
                         {att.public_url && (
-                          <a
-                            href={att.public_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                          >
+                          <a href={att.public_url} target="_blank" rel="noopener noreferrer"
+                            className="px-2 py-0.5 text-[10px] bg-brand-500/10 text-brand-400 rounded hover:bg-brand-500/20 transition-colors">
                             Abrir
                           </a>
                         )}
@@ -296,38 +271,31 @@ export default function ConversationsPage() {
                 </div>
               )}
 
-              {/* Mensagens */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50">
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {loadingMessages ? (
-                  <p className="text-sm text-gray-400 text-center py-8">Carregando mensagens...</p>
+                  <p className="text-xs text-dark-500 text-center py-8">Carregando...</p>
                 ) : messages.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-8">Nenhuma mensagem</p>
+                  <p className="text-xs text-dark-500 text-center py-8">Nenhuma mensagem</p>
                 ) : (
                   messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div
-                        className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-white border border-gray-200 text-gray-800'
-                            : 'bg-blue-600 text-white'
-                        }`}
-                      >
+                    <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+                      <div className={`max-w-[70%] px-3.5 py-2.5 rounded-xl text-sm leading-relaxed ${
+                        msg.role === 'user'
+                          ? 'bg-dark-800 border border-dark-700/50 text-dark-100'
+                          : 'bg-brand-500/10 border border-brand-500/20 text-dark-100'
+                      }`}>
                         {msg.type === 'audio' && msg.role === 'user' && (
-                          <span className="text-xs opacity-70 block mb-1">🎙️ Áudio transcrito:</span>
+                          <span className="text-[10px] text-dark-400 block mb-1">Áudio transcrito</span>
                         )}
                         {msg.type === 'document' && msg.role === 'user' && (
-                          <span className="text-xs opacity-70 block mb-1">📄 Documento:</span>
+                          <span className="text-[10px] text-dark-400 block mb-1">Documento</span>
                         )}
                         {msg.type === 'image' && msg.role === 'user' && (
-                          <span className="text-xs opacity-70 block mb-1">🖼️ Imagem:</span>
+                          <span className="text-[10px] text-dark-400 block mb-1">Imagem</span>
                         )}
                         <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                        <p className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-gray-400' : 'text-blue-200'}`}>
-                          {formatFullDate(msg.created_at)}
-                        </p>
+                        <p className="text-[9px] text-dark-500 mt-1.5">{formatFullDate(msg.created_at)}</p>
                       </div>
                     </div>
                   ))
@@ -335,18 +303,18 @@ export default function ConversationsPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input de resposta */}
-              <form onSubmit={handleSendReply} className="px-4 py-3 border-t border-gray-200 bg-white">
+              {/* Reply */}
+              <form onSubmit={handleSendReply} className="px-4 py-3 border-t border-dark-700/30 bg-dark-900/60">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="Digite uma mensagem..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3.5 py-2.5 bg-dark-800 border border-dark-700/50 rounded-lg text-sm text-dark-50 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
                   />
                   <Button type="submit" disabled={sending || !replyContent.trim()}>
-                    {sending ? '...' : 'Enviar'}
+                    Enviar
                   </Button>
                 </div>
               </form>

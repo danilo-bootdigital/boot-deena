@@ -96,14 +96,14 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
   }, [selectedNode, setNodes, setEdges]);
 
   return (
-    <div className="flex flex-col h-[600px] border border-gray-200 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-[600px] border border-dark-700/50 rounded-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 p-3 bg-gray-50 border-b border-gray-200 overflow-x-auto">
+      <div className="flex items-center gap-2 p-3 bg-dark-900/40 border-b border-dark-700/50 overflow-x-auto">
         {nodeTemplates.map((template) => (
           <button
             key={template.type}
             onClick={() => addNode(template)}
-            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-md hover:bg-gray-100 whitespace-nowrap transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-dark-800/50 border border-dark-700/50 rounded-md hover:bg-dark-800 whitespace-nowrap transition-colors"
           >
             {template.label}
           </button>
@@ -126,17 +126,17 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
 
       {/* Templates Panel */}
       {showTemplates && (
-        <div className="p-3 bg-white border-b border-gray-200 space-y-2">
-          <p className="text-xs font-medium text-gray-500 uppercase">Carregar template pronto:</p>
+        <div className="p-3 bg-dark-800/50 border-b border-dark-700/50 space-y-2">
+          <p className="text-xs font-medium text-dark-400 uppercase">Carregar template pronto:</p>
           <div className="flex gap-2 flex-wrap">
             {flowTemplates.map((t) => (
               <button
                 key={t.id}
                 onClick={() => loadTemplate(t.id)}
-                className="px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
+                className="px-3 py-2 text-xs bg-dark-900/40 border border-dark-700/50 rounded-lg hover:bg-brand-500/5 hover:border-blue-300 transition-colors text-left"
               >
-                <span className="font-medium text-gray-800">{t.name}</span>
-                <span className="block text-gray-500 mt-0.5">{t.description}</span>
+                <span className="font-medium text-dark-100">{t.name}</span>
+                <span className="block text-dark-400 mt-0.5">{t.description}</span>
               </button>
             ))}
           </div>
@@ -157,7 +157,7 @@ export function FlowEditor({ initialNodes = [], initialEdges = [], onSave, savin
           nodeTypes={nodeTypes}
           fitView
           deleteKeyCode="Delete"
-          className="bg-gray-50"
+          className="bg-dark-900/40"
         >
           <Background color="#e5e7eb" gap={20} />
           <Controls />

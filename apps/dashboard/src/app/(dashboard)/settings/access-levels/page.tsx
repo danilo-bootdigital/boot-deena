@@ -112,13 +112,13 @@ export default function AccessLevelsPage() {
   const currentLevel = levels.find((l) => l.role === selectedRole);
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Carregando níveis de acesso...</div>;
+    return <div className="p-6 text-dark-400">Carregando níveis de acesso...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Níveis de Acesso</h1>
+        <h1 className="text-2xl font-bold text-dark-50">Níveis de Acesso</h1>
         {levels.length === 0 && (
           <Button onClick={handleSeedDefaults} disabled={saving}>
             Aplicar Permissões Padrão
@@ -135,8 +135,8 @@ export default function AccessLevelsPage() {
                 onClick={() => setSelectedRole(role)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   selectedRole === role
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-brand-500 text-white'
+                    : 'bg-dark-800 text-dark-200 hover:bg-dark-700'
                 }`}
               >
                 {ROLE_LABELS[role]}
@@ -151,12 +151,12 @@ export default function AccessLevelsPage() {
                   Permissões: {ROLE_LABELS[selectedRole]}
                 </h2>
                 {selectedRole === 'manager' && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-dark-400 mt-1">
                     O Gerente de Conta só visualiza agentes vinculados a ele, independente das permissões abaixo.
                   </p>
                 )}
                 {selectedRole === 'operator' && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-dark-400 mt-1">
                     O Operador só acessa agentes autorizados. Não pode editar agentes ou acessar configurações.
                   </p>
                 )}
@@ -166,7 +166,7 @@ export default function AccessLevelsPage() {
                   const perms = currentLevel.permissions[section] || {};
                   return (
                     <div key={section}>
-                      <h3 className="text-sm font-semibold text-gray-700 mb-2">{label}</h3>
+                      <h3 className="text-sm font-semibold text-dark-200 mb-2">{label}</h3>
                       <div className="flex flex-wrap gap-3">
                         {Object.entries(perms).map(([perm, enabled]) => (
                           <label
@@ -177,10 +177,10 @@ export default function AccessLevelsPage() {
                               type="checkbox"
                               checked={!!enabled}
                               onChange={() => togglePermission(selectedRole, section, perm)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              className="rounded border-dark-600 text-brand-400 focus:ring-brand-500/40"
                               disabled={selectedRole === 'owner'}
                             />
-                            <span className="text-gray-600">
+                            <span className="text-dark-300">
                               {PERMISSION_LABELS[perm] || perm}
                             </span>
                           </label>
@@ -191,7 +191,7 @@ export default function AccessLevelsPage() {
                 })}
 
                 {message && (
-                  <p className={`text-sm ${message.includes('salvas') || message.includes('aplicadas') ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`text-sm ${message.includes('salvas') || message.includes('aplicadas') ? 'text-accent-500' : 'text-red-400'}`}>
                     {message}
                   </p>
                 )}
@@ -210,7 +210,7 @@ export default function AccessLevelsPage() {
       {levels.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-gray-500">
+            <p className="text-dark-400">
               Nenhum nível de acesso configurado. Clique em "Aplicar Permissões Padrão" para começar.
             </p>
           </CardContent>

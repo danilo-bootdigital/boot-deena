@@ -77,16 +77,16 @@ function TopicContent({ id }: { id: string }) {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className="text-base font-semibold text-gray-800 mt-4 mb-2">{children}</h3>;
+  return <h3 className="text-base font-semibold text-dark-100 mt-4 mb-2">{children}</h3>;
 }
 
 function P({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-gray-600 leading-relaxed mb-2">{children}</p>;
+  return <p className="text-sm text-dark-300 leading-relaxed mb-2">{children}</p>;
 }
 
 function UL({ items }: { items: string[] }) {
   return (
-    <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 mb-3 ml-2">
+    <ul className="list-disc list-inside space-y-1 text-sm text-dark-300 mb-3 ml-2">
       {items.map((item, i) => (
         <li key={i}>{item}</li>
       ))}
@@ -96,7 +96,7 @@ function UL({ items }: { items: string[] }) {
 
 function CodeBlock({ children }: { children: string }) {
   return (
-    <pre className="bg-gray-900 text-green-300 text-xs p-3 rounded-lg overflow-x-auto mb-3 whitespace-pre-wrap">
+    <pre className="bg-dark-900 text-green-300 text-xs p-3 rounded-lg overflow-x-auto mb-3 whitespace-pre-wrap">
       {children}
     </pre>
   );
@@ -194,7 +194,7 @@ function EditorFluxos() {
 
       <SectionTitle>Tipos de Blocos</SectionTitle>
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">1. Message (Mensagem)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">1. Message (Mensagem)</h4>
       <P>Envia uma mensagem ao cliente. Pode ser texto fixo ou gerado por IA.</P>
       <UL items={[
         'Texto fixo — Mensagem exata que será enviada (ex: "Olá! Como posso ajudar?")',
@@ -202,7 +202,7 @@ function EditorFluxos() {
         'Suporta variáveis como {{nome}}, {{telefone}} que são substituídas por dados salvos',
       ]} />
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">2. Condition (Condição)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">2. Condition (Condição)</h4>
       <P>Cria uma bifurcação no fluxo baseada em uma condição. Permite caminhos diferentes conforme a resposta do cliente.</P>
       <UL items={[
         'Condição por palavra-chave — Verifica se a mensagem contém determinadas palavras',
@@ -211,7 +211,7 @@ function EditorFluxos() {
         'Sempre tem duas saídas: "Verdadeiro" e "Falso"',
       ]} />
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">3. Wait (Espera)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">3. Wait (Espera)</h4>
       <P>Pausa o fluxo e aguarda uma ação do cliente antes de continuar.</P>
       <UL items={[
         'Aguardar resposta — Espera o cliente enviar qualquer mensagem',
@@ -219,7 +219,7 @@ function EditorFluxos() {
         'Timeout — Define tempo máximo de espera. Se expirar, segue por um caminho alternativo',
       ]} />
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">4. Save Data (Salvar Dados)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">4. Save Data (Salvar Dados)</h4>
       <P>Extrai e salva informações da conversa para uso posterior.</P>
       <UL items={[
         'Extração por IA — A IA identifica e extrai dados da mensagem (nome, email, telefone, interesse)',
@@ -228,7 +228,7 @@ function EditorFluxos() {
         'Exemplos: salvar nome do cliente, tipo de imóvel desejado, horário preferido',
       ]} />
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">5. Action/API (Ação Externa)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">5. Action/API (Ação Externa)</h4>
       <P>Executa uma chamada a uma API externa ou ação do sistema.</P>
       <UL items={[
         'Webhook — Envia dados para uma URL externa (integração com CRM, ERP, planilhas)',
@@ -237,7 +237,7 @@ function EditorFluxos() {
         'Os dados retornados podem ser usados nos blocos seguintes',
       ]} />
 
-      <h4 className="text-sm font-semibold text-blue-700 mt-3 mb-1">6. Handoff (Transferência)</h4>
+      <h4 className="text-sm font-semibold text-brand-400 mt-3 mb-1">6. Handoff (Transferência)</h4>
       <P>Transfere a conversa para um atendente humano ou outro departamento.</P>
       <UL items={[
         'Transferir para fila — Envia para a fila geral de atendimento humano',
@@ -705,8 +705,8 @@ export default function KnowledgeBasePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Central de Ajuda</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-dark-50">Central de Ajuda</h1>
+        <p className="text-sm text-dark-400 mt-1">
           Documentação completa da plataforma LeadPilot. Clique em um tópico para expandir.
         </p>
       </div>
@@ -716,18 +716,18 @@ export default function KnowledgeBasePage() {
           <Card key={topic.id} className="overflow-hidden">
             <button
               onClick={() => toggle(topic.id)}
-              className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+              className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-dark-900/40 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xl">{topic.icon}</span>
-                <span className="font-medium text-gray-900">{topic.title}</span>
+                <span className="font-medium text-dark-50">{topic.title}</span>
               </div>
-              <span className="text-gray-400 text-lg">
+              <span className="text-dark-500 text-lg">
                 {openTopic === topic.id ? '−' : '+'}
               </span>
             </button>
             {openTopic === topic.id && (
-              <CardContent className="border-t border-gray-100 pt-4 pb-5 px-5">
+              <CardContent className="border-t border-dark-700/30 pt-4 pb-5 px-5">
                 <TopicContent id={topic.id} />
               </CardContent>
             )}

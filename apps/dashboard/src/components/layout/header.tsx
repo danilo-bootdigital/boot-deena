@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { useOrganization } from '@/hooks/use-organization';
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { currentOrg } = useOrganization();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -13,13 +15,19 @@ export function Header() {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-      <div />
+    <header className="h-14 bg-dark-900/40 backdrop-blur-sm border-b border-dark-700/30 flex items-center justify-between px-6">
+      <div className="flex items-center gap-3">
+        {currentOrg && (
+          <span className="text-xs font-medium text-dark-300 bg-dark-800 px-2.5 py-1 rounded-md border border-dark-700/50">
+            {currentOrg.name}
+          </span>
+        )}
+      </div>
       <div className="flex items-center gap-4">
-        <span className="text-sm text-gray-600">{user?.email}</span>
+        <span className="text-xs text-dark-400">{user?.email}</span>
         <button
           onClick={handleSignOut}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-xs text-dark-400 hover:text-dark-200 transition-colors cursor-pointer"
         >
           Sair
         </button>

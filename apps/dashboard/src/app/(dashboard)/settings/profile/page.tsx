@@ -72,12 +72,12 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return <div className="p-6 text-gray-500">Carregando perfil...</div>;
+    return <div className="p-6 text-dark-400">Carregando perfil...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Meu Perfil</h1>
+      <h1 className="text-2xl font-bold text-dark-50">Meu Perfil</h1>
 
       <form onSubmit={handleSave}>
         <Card>
@@ -87,7 +87,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dark-200 mb-1">
                   Nome Completo
                 </label>
                 <Input
@@ -97,7 +97,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dark-200 mb-1">
                   Nome de Exibição
                 </label>
                 <Input
@@ -107,7 +107,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dark-200 mb-1">
                   Telefone
                 </label>
                 <Input
@@ -117,7 +117,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dark-200 mb-1">
                   Cargo
                 </label>
                 <Input
@@ -128,23 +128,23 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dark-200 mb-1">
                 Bio
               </label>
               <textarea
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                 rows={3}
                 value={profile?.bio || ''}
                 onChange={(e) => setProfile({ ...profile!, bio: e.target.value || null })}
                 placeholder="Uma breve descrição sobre você"
               />
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-dark-400">
               E-mail: {user?.email}
             </div>
 
             {message && (
-              <p className={`text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-sm ${message.includes('sucesso') ? 'text-accent-500' : 'text-red-400'}`}>
                 {message}
               </p>
             )}
