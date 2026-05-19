@@ -148,6 +148,15 @@ export class OrganizationsService {
         }, { onConflict: 'id' });
     }
 
+    // Garantir que o perfil existe (mesmo para usuários já existentes)
+    await this.supabase
+      .from('profiles')
+      .upsert({
+        id: userId,
+        full_name: dto.full_name || dto.email.split('@')[0],
+        email: dto.email,
+      }, { onConflict: 'id' });
+
     // Verificar se já é membro
     const { data: existing } = await this.supabase
       .from('org_members')

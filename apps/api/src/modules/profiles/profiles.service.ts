@@ -44,6 +44,15 @@ export class ProfilesService {
       .eq('organization_id', organizationId);
 
     if (error) throw error;
-    return data?.map((m) => ({ ...m.profiles, role: m.role, user_id: m.user_id })) || [];
+    return data?.map((m) => ({
+      id: m.profiles?.id || m.user_id,
+      user_id: m.user_id,
+      full_name: m.profiles?.full_name || 'Usuário',
+      display_name: m.profiles?.display_name || null,
+      avatar_url: m.profiles?.avatar_url || null,
+      job_title: m.profiles?.job_title || null,
+      email: m.profiles?.email || null,
+      role: m.role,
+    })) || [];
   }
 }
