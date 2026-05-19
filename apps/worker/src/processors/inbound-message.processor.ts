@@ -64,6 +64,31 @@ export class InboundMessageProcessor extends WorkerHost {
     try {
       const resolved = await this.conversationResolver.resolve(instanceName, remoteJid, pushName);
 
+      // Se é uma nova conversa, criar lead automaticamente no pipeline
+      if (resolved.isNew) {
+        const phone = remoteJid.replace('@s.whatsapp.net', '');
+        await this.supabase
+          .from('leads')
+          .insert({
+            organization_id: resolved.organizationId,
+            conversation_id: resolved.conversationId,
+            agent_id: resolved.agentId,
+            name: pushName || null,
+            phone,
+            stage: 'new',
+            temperature: 'cold',
+            source: 'whatsapp',
+            last_contact_at: new Date().toISOString(),
+          });
+        this.logger.log(`Lead created for new conversation: ${phone}`);
+      } else {
+        // Atualizar last_contact_at do lead existente
+        await this.supabase
+          .from('leads')
+          .update({ last_contact_at: new Date().toISOString() })
+          .eq('conversation_id', resolved.conversationId);
+      }
+
       // Cancelar follow-ups pendentes quando o paciente responde
       await this.supabase
         .from('scheduled_messages')

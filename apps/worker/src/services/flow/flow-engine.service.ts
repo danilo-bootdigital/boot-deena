@@ -119,6 +119,18 @@ export class FlowEngineService {
               varValue = this.interpolateVariables(varValue, context.variables);
             }
             context.variables[varName] = varValue || context.userMessage;
+
+            // Atualizar lead no pipeline quando estágio é definido
+            if (varName === 'estagio_lead' && context.conversationId) {
+              const tempMap: Record<string, string> = { frio: 'cold', morno: 'warm', quente: 'hot' };
+              const stageMap: Record<string, string> = { quente: 'qualified', morno: 'new', frio: 'new' };
+              const temp = tempMap[varValue] || 'cold';
+              const stage = stageMap[varValue] || 'new';
+              await this.supabase
+                .from('leads')
+                .update({ temperature: temp, stage })
+                .eq('conversation_id', context.conversationId);
+            }
           }
           currentStep = this.getNextStep(steps, currentStep.next_step_id);
           break;
