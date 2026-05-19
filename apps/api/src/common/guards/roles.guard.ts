@@ -7,6 +7,18 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
+// Hierarquia de roles — maior número = mais permissão
+const ROLE_HIERARCHY: Record<string, number> = {
+  viewer: 1,
+  attendant: 2,
+  operator: 2, // alias legado
+  manager: 3,
+  company_admin: 4,
+  admin: 4, // alias legado
+  owner: 5,
+  master_admin: 6,
+};
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -29,7 +41,13 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('No organization role found');
     }
 
-    if (!requiredRoles.includes(userRole)) {
+    // Verificar se o role do usuário tem nível suficiente
+    const userLevel = ROLE_HIERARCHY[userRole] || 0;
+    const hasAccess = requiredRoles.some(
+      (required) => userLevel >= (ROLE_HIERARCHY[required] || 0),
+    );
+
+    if (!hasAccess) {
       throw new ForbiddenException(
         `Requires role: ${requiredRoles.join(' or ')}. Your role: ${userRole}`,
       );

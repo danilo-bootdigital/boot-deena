@@ -26,16 +26,22 @@ interface Agent {
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Proprietário',
+  company_admin: 'Administrador',
   admin: 'Administrador',
-  manager: 'Gerente de Conta',
-  operator: 'Operador/Atendente',
+  manager: 'Gestor',
+  attendant: 'Atendente',
+  operator: 'Atendente',
+  viewer: 'Visualizador',
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  owner: 'bg-purple-500/10 text-purple-400',
+  owner: 'bg-yellow-500/10 text-yellow-400',
+  company_admin: 'bg-purple-500/10 text-purple-400',
   admin: 'bg-purple-500/10 text-purple-400',
   manager: 'bg-brand-500/10 text-brand-400',
+  attendant: 'bg-accent-500/10 text-accent-500',
   operator: 'bg-accent-500/10 text-accent-500',
+  viewer: 'bg-dark-600 text-dark-300',
 };
 
 export default function MembersPage() {
@@ -49,7 +55,7 @@ export default function MembersPage() {
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formPassword, setFormPassword] = useState('');
-  const [formRole, setFormRole] = useState('operator');
+  const [formRole, setFormRole] = useState('attendant');
   const [allAgents, setAllAgents] = useState(false);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -93,14 +99,14 @@ export default function MembersPage() {
         full_name: formName || undefined,
         password: formPassword || undefined,
         role: formRole,
-        all_agents: formRole === 'admin' ? true : allAgents,
-        agent_ids: (!allAgents && formRole !== 'admin') ? selectedAgentIds : undefined,
+        all_agents: formRole === 'company_admin' ? true : allAgents,
+        agent_ids: (!allAgents && formRole !== 'company_admin') ? selectedAgentIds : undefined,
       });
       setMessage('Membro cadastrado com sucesso!');
       setFormName('');
       setFormEmail('');
       setFormPassword('');
-      setFormRole('operator');
+      setFormRole('attendant');
       setSelectedAgentIds([]);
       setAllAgents(false);
       loadData();
@@ -118,8 +124,8 @@ export default function MembersPage() {
     try {
       await api.put(`/organizations/${currentOrg.id}/members/${editingMember.user_id || editingMember.id}`, {
         role: editRole,
-        all_agents: editRole === 'admin' ? true : editAllAgents,
-        agent_ids: (!editAllAgents && editRole !== 'admin') ? editAgentIds : undefined,
+        all_agents: editRole === 'company_admin' ? true : editAllAgents,
+        agent_ids: (!editAllAgents && editRole !== 'company_admin') ? editAgentIds : undefined,
       });
       setEditingMember(null);
       loadData();
@@ -163,7 +169,7 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-dark-50">Membros da Organização</h1>
+      <h1 className="text-2xl font-bold text-dark-50">Membros da Empresa</h1>
 
       {/* Formulário de cadastro */}
       <Card>
@@ -198,18 +204,19 @@ export default function MembersPage() {
                 placeholder="Mínimo 6 caracteres"
               />
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-dark-200">Nível de Acesso</label>
+                <label className="block text-sm font-medium text-dark-200">Função</label>
                 <select
                   className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={formRole}
                   onChange={(e) => {
                     setFormRole(e.target.value);
-                    if (e.target.value === 'admin') setAllAgents(true);
+                    if (e.target.value === 'company_admin') setAllAgents(true);
                   }}
                 >
-                  <option value="admin">Administrador</option>
-                  <option value="manager">Gerente de Conta</option>
-                  <option value="operator">Operador/Atendente</option>
+                  <option value="company_admin">Administrador</option>
+                  <option value="manager">Gestor</option>
+                  <option value="attendant">Atendente</option>
+                  <option value="viewer">Visualizador</option>
                 </select>
               </div>
             </div>
@@ -311,15 +318,16 @@ export default function MembersPage() {
                   <div className="mt-3 ml-13 p-4 bg-dark-900/40 rounded-lg space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="space-y-1">
-                        <label className="block text-xs font-medium text-dark-300">Nível de Acesso</label>
+                        <label className="block text-xs font-medium text-dark-300">Função</label>
                         <select
                           className="rounded-md border border-dark-600 px-3 py-1.5 text-sm"
                           value={editRole}
                           onChange={(e) => setEditRole(e.target.value)}
                         >
-                          <option value="admin">Administrador</option>
-                          <option value="manager">Gerente de Conta</option>
-                          <option value="operator">Operador/Atendente</option>
+                          <option value="company_admin">Administrador</option>
+                          <option value="manager">Gestor</option>
+                          <option value="attendant">Atendente</option>
+                          <option value="viewer">Visualizador</option>
                         </select>
                       </div>
                     </div>
@@ -382,9 +390,10 @@ export default function MembersPage() {
       </Card>
 
       <div className="bg-dark-900/40 p-4 rounded-lg text-sm text-dark-300 space-y-2">
-        <p><strong>Administrador:</strong> Acesso total. Visualiza todos os agentes, membros e configurações.</p>
-        <p><strong>Gerente de Conta:</strong> Visualiza e edita apenas os agentes vinculados. Gerencia atendentes dos seus agentes.</p>
-        <p><strong>Operador/Atendente:</strong> Acesso limitado. Responde atendimentos e visualiza conversas dos agentes autorizados.</p>
+        <p><strong>Administrador:</strong> Acesso total à empresa. Gerencia membros, agentes, WhatsApp e configurações.</p>
+        <p><strong>Gestor:</strong> Supervisiona equipe. Visualiza métricas, pipeline e conversas dos agentes vinculados.</p>
+        <p><strong>Atendente:</strong> Responde conversas e movimenta pipeline dos agentes autorizados.</p>
+        <p><strong>Visualizador:</strong> Apenas leitura. Não edita, não exclui, não gerencia.</p>
       </div>
     </div>
   );

@@ -169,7 +169,7 @@ export class OrganizationsService {
       throw new ConflictException('Usuário já é membro desta organização');
     }
 
-    const allAgents = dto.role === 'admin' ? true : (dto.all_agents || false);
+    const allAgents = (dto.role === 'admin' || dto.role === 'company_admin') ? true : (dto.all_agents || false);
 
     const { error } = await this.supabase
       .from('org_members')
@@ -216,7 +216,7 @@ export class OrganizationsService {
       throw new ForbiddenException('Não é possível alterar o nível do proprietário');
     }
 
-    const allAgents = dto.role === 'admin' ? true : (dto.all_agents ?? false);
+    const allAgents = (dto.role === 'admin' || dto.role === 'company_admin') ? true : (dto.all_agents ?? false);
 
     const { error } = await this.supabase
       .from('org_members')

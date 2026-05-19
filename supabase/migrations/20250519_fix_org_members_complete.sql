@@ -13,6 +13,15 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'operator' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'org_role')) THEN
     ALTER TYPE org_role ADD VALUE IF NOT EXISTS 'operator';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'company_admin' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'org_role')) THEN
+    ALTER TYPE org_role ADD VALUE IF NOT EXISTS 'company_admin';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'attendant' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'org_role')) THEN
+    ALTER TYPE org_role ADD VALUE IF NOT EXISTS 'attendant';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'viewer' AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'org_role')) THEN
+    ALTER TYPE org_role ADD VALUE IF NOT EXISTS 'viewer';
+  END IF;
 END$$;
 
 -- 2. Coluna all_agents em org_members

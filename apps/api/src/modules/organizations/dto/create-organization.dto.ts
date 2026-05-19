@@ -11,13 +11,13 @@ export const inviteMemberSchema = z.object({
   email: z.string().email(),
   full_name: z.string().min(1).max(100).optional(),
   password: z.string().min(6).max(100).optional(),
-  role: z.enum(['admin', 'manager', 'operator']).default('operator'),
+  role: z.enum(['company_admin', 'manager', 'attendant', 'viewer', 'admin', 'operator']).default('attendant'),
   all_agents: z.boolean().default(false),
   agent_ids: z.array(z.string().uuid()).optional(),
 });
 
 export const updateMemberRoleSchema = z.object({
-  role: z.enum(['admin', 'manager', 'operator']),
+  role: z.enum(['company_admin', 'manager', 'attendant', 'viewer', 'admin', 'operator']),
   all_agents: z.boolean().optional(),
   agent_ids: z.array(z.string().uuid()).optional(),
 });
