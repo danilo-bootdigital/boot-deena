@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { href: '/conversations', label: 'Conversas', icon: ConversationsIcon, minRole: 'attendant' },
   { href: '/knowledge-base', label: 'Conhecimento', icon: KnowledgeIcon, minRole: 'manager' },
   { href: '/settings', label: 'Configurações', icon: SettingsIcon, minRole: 'company_admin' },
+  { href: '/admin', label: 'Painel Master', icon: AdminIcon, minRole: 'master_admin' },
 ];
 
 export function Sidebar() {
@@ -141,6 +142,15 @@ function PipelineIcon({ active }: { active: boolean }) {
       <rect x="1.5" y="3" width="3" height="10" rx="1" stroke="currentColor" strokeWidth="1.5" />
       <rect x="6.5" y="5" width="3" height="8" rx="1" stroke="currentColor" strokeWidth="1.5" />
       <rect x="11.5" y="7" width="3" height="6" rx="1" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function AdminIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={active ? 'text-brand-500' : 'text-current'}>
+      <path d="M8 1.5L2 4.5v4c0 3.5 2.5 5.5 6 7 3.5-1.5 6-3.5 6-7v-4L8 1.5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6 8l1.5 1.5L10 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
