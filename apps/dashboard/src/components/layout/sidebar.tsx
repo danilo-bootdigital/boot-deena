@@ -2,19 +2,30 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { usePermissions } from '@/hooks/use-permissions';
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: DashboardIcon },
-  { href: '/agents', label: 'Agentes', icon: AgentsIcon },
-  { href: '/whatsapp', label: 'WhatsApp', icon: WhatsappIcon },
-  { href: '/pipeline', label: 'Pipeline', icon: PipelineIcon },
-  { href: '/conversations', label: 'Conversas', icon: ConversationsIcon },
-  { href: '/knowledge-base', label: 'Conhecimento', icon: KnowledgeIcon },
-  { href: '/settings', label: 'Configurações', icon: SettingsIcon },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.FC<{ active: boolean }>;
+  minRole?: string;
+}
+
+const navItems: NavItem[] = [
+  { href: '/', label: 'Dashboard', icon: DashboardIcon, minRole: 'viewer' },
+  { href: '/agents', label: 'Agentes', icon: AgentsIcon, minRole: 'manager' },
+  { href: '/whatsapp', label: 'WhatsApp', icon: WhatsappIcon, minRole: 'company_admin' },
+  { href: '/pipeline', label: 'Pipeline', icon: PipelineIcon, minRole: 'attendant' },
+  { href: '/conversations', label: 'Conversas', icon: ConversationsIcon, minRole: 'attendant' },
+  { href: '/knowledge-base', label: 'Conhecimento', icon: KnowledgeIcon, minRole: 'manager' },
+  { href: '/settings', label: 'Configurações', icon: SettingsIcon, minRole: 'company_admin' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { hasRole } = usePermissions();
+
+  const visibleItems = navItems.filter((item) => !item.minRole || hasRole(item.minRole));
 
   return (
     <aside className="w-[240px] bg-dark-900/80 backdrop-blur-xl border-r border-dark-700/40 min-h-screen flex flex-col">
@@ -31,7 +42,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-0.5">
-          {navItems.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = item.href === '/'
               ? pathname === '/'
               : pathname?.startsWith(item.href);
