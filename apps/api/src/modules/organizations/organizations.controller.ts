@@ -20,6 +20,7 @@ import {
   createOrganizationSchema,
   updateOrganizationSchema,
   inviteMemberSchema,
+  updateMemberRoleSchema,
 } from './dto/create-organization.dto';
 
 @Controller('organizations')
@@ -80,5 +81,16 @@ export class OrganizationsController {
     @Param('userId', UuidValidationPipe) userId: string,
   ) {
     return this.orgsService.removeMember(orgId, userId);
+  }
+
+  @Put(':id/members/:userId')
+  @UseGuards(RolesGuard)
+  @Roles('owner', 'admin')
+  updateMemberRole(
+    @CurrentOrg() orgId: string,
+    @Param('userId', UuidValidationPipe) userId: string,
+    @Body(new ZodValidationPipe(updateMemberRoleSchema)) body: unknown,
+  ) {
+    return this.orgsService.updateMemberRole(orgId, userId, body as any);
   }
 }

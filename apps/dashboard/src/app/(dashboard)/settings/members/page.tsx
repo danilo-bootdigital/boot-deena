@@ -13,6 +13,7 @@ interface Member {
   display_name: string | null;
   avatar_url: string | null;
   job_title: string | null;
+  email?: string;
   role: string;
 }
 
@@ -23,7 +24,7 @@ interface Agent {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  owner: 'Administrador',
+  owner: 'Proprietário',
   admin: 'Administrador',
   manager: 'Gerente de Conta',
   operator: 'Operador/Atendente',
@@ -42,12 +43,22 @@ export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('operator');
+
+  // Form de cadastro
+  const [formName, setFormName] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formPassword, setFormPassword] = useState('');
+  const [formRole, setFormRole] = useState('operator');
   const [allAgents, setAllAgents] = useState(false);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
-  const [inviting, setInviting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Edição
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [editRole, setEditRole] = useState('');
+  const [editAllAgents, setEditAllAgents] = useState(false);
+  const [editAgentIds, setEditAgentIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (currentOrg?.id) loadData();
@@ -69,28 +80,52 @@ export default function MembersPage() {
     }
   }
 
-  async function handleInvite(e: React.FormEvent) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!currentOrg?.id || !inviteEmail) return;
+    if (!currentOrg?.id || !formEmail) return;
 
-    setInviting(true);
+    setSaving(true);
     setMessage('');
     try {
       await api.post(`/organizations/${currentOrg.id}/members`, {
-        email: inviteEmail,
-        role: inviteRole,
-        all_agents: inviteRole === 'admin' ? true : allAgents,
-        agent_ids: (!allAgents && inviteRole !== 'admin') ? selectedAgentIds : undefined,
+        email: formEmail,
+        full_name: formName || undefined,
+        password: formPassword || undefined,
+        role: formRole,
+        all_agents: formRole === 'admin' ? true : allAgents,
+        agent_ids: (!allAgents && formRole !== 'admin') ? selectedAgentIds : undefined,
       });
-      setMessage('Membro convidado com sucesso!');
-      setInviteEmail('');
+      setMessage('Membro cadastrado com sucesso!');
+      setFormName('');
+      setFormEmail('');
+      setFormPassword('');
+      setFormRole('operator');
       setSelectedAgentIds([]);
       setAllAgents(false);
       loadData();
     } catch (err: any) {
-      setMessage(err?.message || 'Erro ao convidar membro.');
+      setMessage(err?.message || 'Erro ao cadastrar membro.');
     } finally {
-      setInviting(false);
+      setSaving(false);
+    }
+  }
+
+  async function handleUpdateRole() {
+    if (!currentOrg?.id || !editingMember) return;
+
+    setSaving(true);
+    try {
+      await api.put(`/organizations/${currentOrg.id}/members/${editingMember.id}`, {
+        role: editRole,
+        all_agents: editRole === 'admin' ? true : editAllAgents,
+        agent_ids: (!editAllAgents && editRole !== 'admin') ? editAgentIds : undefined,
+      });
+      setEditingMember(null);
+      loadData();
+    } catch (err: any) {
+      setMessage(err?.message || 'Erro ao atualizar membro.');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -106,11 +141,18 @@ export default function MembersPage() {
     }
   }
 
-  function toggleAgent(agentId: string) {
-    setSelectedAgentIds((prev) =>
-      prev.includes(agentId)
-        ? prev.filter((id) => id !== agentId)
-        : [...prev, agentId],
+  function startEdit(member: Member) {
+    setEditingMember(member);
+    setEditRole(member.role);
+    setEditAllAgents(false);
+    setEditAgentIds([]);
+  }
+
+  function toggleAgent(agentId: string, list: string[], setter: (v: string[]) => void) {
+    setter(
+      list.includes(agentId)
+        ? list.filter((id) => id !== agentId)
+        : [...list, agentId],
     );
   }
 
@@ -122,30 +164,45 @@ export default function MembersPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Membros da Organização</h1>
 
+      {/* Formulário de cadastro */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold">Convidar Novo Membro</h2>
+          <h2 className="text-lg font-semibold">Cadastrar Novo Membro</h2>
+          <p className="text-sm text-gray-500">Crie uma conta de acesso para um novo membro da equipe</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleInvite} className="space-y-4">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
-                <Input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                  required
-                />
-              </div>
-              <div className="w-48">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nível de Acesso</label>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label="Nome completo"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                placeholder="João Silva"
+              />
+              <Input
+                label="E-mail"
+                type="email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                placeholder="joao@clinica.com"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label="Senha (para novo usuário)"
+                type="password"
+                value={formPassword}
+                onChange={(e) => setFormPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+              />
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700">Nível de Acesso</label>
                 <select
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={inviteRole}
+                  value={formRole}
                   onChange={(e) => {
-                    setInviteRole(e.target.value);
+                    setFormRole(e.target.value);
                     if (e.target.value === 'admin') setAllAgents(true);
                   }}
                 >
@@ -156,73 +213,55 @@ export default function MembersPage() {
               </div>
             </div>
 
-            {inviteRole !== 'admin' && (
+            {formRole !== 'admin' && (
               <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Acesso a Agentes
-                </label>
-                <div className="flex items-center gap-3">
+                <label className="block text-sm font-semibold text-gray-700">Acesso a Agentes</label>
+                <div className="flex items-center gap-4">
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={allAgents}
-                      onChange={() => setAllAgents(true)}
-                      className="text-blue-600"
-                    />
+                    <input type="radio" checked={allAgents} onChange={() => setAllAgents(true)} className="text-blue-600" />
                     Todos os agentes
                   </label>
                   <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={!allAgents}
-                      onChange={() => setAllAgents(false)}
-                      className="text-blue-600"
-                    />
+                    <input type="radio" checked={!allAgents} onChange={() => setAllAgents(false)} className="text-blue-600" />
                     Agentes específicos
                   </label>
                 </div>
-
                 {!allAgents && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                     {agents.map((agent) => (
                       <label
                         key={agent.id}
                         className={`flex items-center gap-2 p-2 rounded border text-sm cursor-pointer transition-colors ${
-                          selectedAgentIds.includes(agent.id)
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                          selectedAgentIds.includes(agent.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={selectedAgentIds.includes(agent.id)}
-                          onChange={() => toggleAgent(agent.id)}
+                          onChange={() => toggleAgent(agent.id, selectedAgentIds, setSelectedAgentIds)}
                           className="rounded border-gray-300 text-blue-600"
                         />
                         <span className="truncate">{agent.name}</span>
                       </label>
                     ))}
-                    {agents.length === 0 && (
-                      <p className="text-xs text-gray-400 col-span-full">Nenhum agente criado.</p>
-                    )}
+                    {agents.length === 0 && <p className="text-xs text-gray-400 col-span-full">Nenhum agente criado.</p>}
                   </div>
                 )}
               </div>
             )}
 
             {message && (
-              <p className={`text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
-                {message}
-              </p>
+              <p className={`text-sm ${message.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>
             )}
 
-            <Button type="submit" disabled={inviting}>
-              {inviting ? 'Convidando...' : 'Convidar'}
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Cadastrando...' : 'Cadastrar Membro'}
             </Button>
           </form>
         </CardContent>
       </Card>
 
+      {/* Lista de membros */}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-semibold">Membros ({members.length})</h2>
@@ -230,33 +269,108 @@ export default function MembersPage() {
         <CardContent>
           <div className="divide-y">
             {members.map((member) => (
-              <div key={member.id} className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
-                    {(member.display_name || member.full_name || '?').charAt(0).toUpperCase()}
+              <div key={member.id} className="py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
+                      {(member.display_name || member.full_name || '?').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {member.display_name || member.full_name || 'Sem nome'}
+                      </p>
+                      {member.job_title && <p className="text-xs text-gray-500">{member.job_title}</p>}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {member.display_name || member.full_name || 'Sem nome'}
-                    </p>
-                    {member.job_title && (
-                      <p className="text-xs text-gray-500">{member.job_title}</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.role] || ROLE_COLORS.operator}`}>
+                      {ROLE_LABELS[member.role] || member.role}
+                    </span>
+                    {member.role !== 'owner' && (
+                      <>
+                        <button
+                          onClick={() => startEdit(member)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleRemove(member.id)}
+                          className="text-xs text-red-500 hover:text-red-700"
+                        >
+                          Remover
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[member.role] || ROLE_COLORS.operator}`}>
-                    {ROLE_LABELS[member.role] || member.role}
-                  </span>
-                  {member.role !== 'owner' && (
-                    <button
-                      onClick={() => handleRemove(member.id)}
-                      className="text-xs text-red-500 hover:text-red-700"
-                    >
-                      Remover
-                    </button>
-                  )}
-                </div>
+
+                {/* Painel de edição inline */}
+                {editingMember?.id === member.id && (
+                  <div className="mt-3 ml-13 p-4 bg-gray-50 rounded-lg space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-xs font-medium text-gray-600">Nível de Acesso</label>
+                        <select
+                          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                          value={editRole}
+                          onChange={(e) => setEditRole(e.target.value)}
+                        >
+                          <option value="admin">Administrador</option>
+                          <option value="manager">Gerente de Conta</option>
+                          <option value="operator">Operador/Atendente</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {editRole !== 'admin' && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 text-xs cursor-pointer">
+                            <input type="radio" checked={editAllAgents} onChange={() => setEditAllAgents(true)} className="text-blue-600" />
+                            Todos os agentes
+                          </label>
+                          <label className="flex items-center gap-2 text-xs cursor-pointer">
+                            <input type="radio" checked={!editAllAgents} onChange={() => setEditAllAgents(false)} className="text-blue-600" />
+                            Específicos
+                          </label>
+                        </div>
+                        {!editAllAgents && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+                            {agents.map((agent) => (
+                              <label
+                                key={agent.id}
+                                className={`flex items-center gap-1.5 p-1.5 rounded border text-xs cursor-pointer ${
+                                  editAgentIds.includes(agent.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={editAgentIds.includes(agent.id)}
+                                  onChange={() => toggleAgent(agent.id, editAgentIds, setEditAgentIds)}
+                                  className="rounded border-gray-300 text-blue-600 w-3 h-3"
+                                />
+                                <span className="truncate">{agent.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button onClick={handleUpdateRole} disabled={saving}>
+                        {saving ? 'Salvando...' : 'Salvar'}
+                      </Button>
+                      <button
+                        onClick={() => setEditingMember(null)}
+                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {members.length === 0 && (
