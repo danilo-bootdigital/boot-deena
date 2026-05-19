@@ -96,6 +96,32 @@ export class AgentsService {
     return { deleted: true };
   }
 
+  async duplicate(id: string, organizationId: string) {
+    const { data: original, error: findError } = await this.supabase
+      .from('agents')
+      .select('*')
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .single();
+
+    if (findError || !original) throw new NotFoundException('Agent not found');
+
+    const { id: _id, created_at: _ca, updated_at: _ua, ...agentData } = original;
+
+    const { data, error } = await this.supabase
+      .from('agents')
+      .insert({
+        ...agentData,
+        name: `${original.name} (cópia)`,
+        status: 'draft',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
   async chat(id: string, organizationId: string, message: string, history: Array<{ role: string; content: string }>) {
     const agent = await this.findOne(id, organizationId);
 

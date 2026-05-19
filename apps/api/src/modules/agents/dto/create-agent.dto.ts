@@ -10,6 +10,9 @@ export const createAgentSchema = z.object({
     .default('gpt-4o-mini'),
   temperature: z.number().min(0).max(2).default(0.7),
   max_tokens: z.number().min(100).max(8192).default(1024),
+  voice_enabled: z.boolean().default(false),
+  voice_id: z.enum(['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']).default('nova'),
+  settings: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const updateAgentSchema = createAgentSchema.partial();

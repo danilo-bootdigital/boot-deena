@@ -55,6 +55,12 @@ export class AgentsController {
     return this.agentsService.remove(id, orgId);
   }
 
+  @Post(':id/duplicate')
+  @Roles('owner', 'admin')
+  duplicate(@Param('id', UuidValidationPipe) id: string, @CurrentOrg() orgId: string) {
+    return this.agentsService.duplicate(id, orgId);
+  }
+
   @Post(':id/chat')
   chat(
     @Param('id', UuidValidationPipe) id: string,

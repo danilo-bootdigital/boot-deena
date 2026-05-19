@@ -190,6 +190,21 @@ export default function AgentsPage() {
                           Editar
                         </Button>
                       )}
+                      {canCreate && (
+                        <Button size="sm" variant="secondary" onClick={async () => {
+                          try {
+                            const duplicated = await api<Agent>(`/agents/${agent.id}/duplicate`, {
+                              method: 'POST',
+                              token: session!.access_token,
+                              orgId: currentOrg!.id,
+                            });
+                            mutate();
+                            router.push(`/agents/${duplicated.id}`);
+                          } catch {}
+                        }}>
+                          Duplicar
+                        </Button>
+                      )}
                       {!canEdit && (
                         <Button size="sm" variant="secondary" onClick={() => router.push(`/agents/${agent.id}`)}>
                           Visualizar
