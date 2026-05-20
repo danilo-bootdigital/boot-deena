@@ -5,6 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const settingsItems = [
   {
+    href: '/settings/company',
+    title: 'Empresa',
+    description: 'Nome, slug e informações gerais da empresa.',
+    icon: '🏢',
+  },
+  {
     href: '/settings/profile',
     title: 'Meu Perfil',
     description: 'Edite suas informações pessoais, cargo e preferências.',

@@ -48,7 +48,7 @@ export class OrganizationsController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
-  @Roles('owner', 'admin')
+  @Roles('owner', 'admin', 'company_admin', 'master_admin')
   update(
     @Param('id', UuidValidationPipe) _id: string,
     @Body(new ZodValidationPipe(updateOrganizationSchema)) body: unknown,
