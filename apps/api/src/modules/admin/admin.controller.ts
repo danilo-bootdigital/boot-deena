@@ -49,11 +49,28 @@ export class AdminController {
 
     const { data, error } = await this.supabase
       .from('organizations')
-      .insert({ name: body.name, slug: body.slug })
+      .insert({
+        name: body.name,
+        slug: body.slug,
+        plan: 'free',
+        max_agents: 3,
+        max_conversations_per_month: 1000,
+        settings: {},
+      })
       .select()
       .single();
 
     if (error) throw error;
+
+    // Vincular o master admin como owner da nova empresa
+    const user = req.user;
+    await this.supabase.from('org_members').insert({
+      organization_id: data.id,
+      user_id: user.id,
+      role: 'owner',
+      all_agents: true,
+    });
+
     return data;
   }
 
