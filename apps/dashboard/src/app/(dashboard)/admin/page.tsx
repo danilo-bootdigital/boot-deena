@@ -29,6 +29,9 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSlug, setEditSlug] = useState('');
 
   useEffect(() => {
     if (session) loadOrgs();
@@ -74,6 +77,28 @@ export default function AdminPage() {
       loadOrgs();
     } catch (err: any) {
       setMessage(err?.message || 'Erro ao excluir empresa.');
+    }
+  }
+
+  function startEdit(org: Organization) {
+    setEditingOrg(org);
+    setEditName(org.name);
+    setEditSlug(org.slug);
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingOrg) return;
+    setSaving(true);
+    try {
+      await api.put(`/admin/organizations/${editingOrg.id}`, { name: editName, slug: editSlug });
+      setMessage('Empresa atualizada!');
+      setEditingOrg(null);
+      loadOrgs();
+    } catch (err: any) {
+      setMessage(err?.message || 'Erro ao atualizar empresa.');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -184,12 +209,40 @@ export default function AdminPage() {
                       )}
                     </div>
                   )}
-                  <button
-                    onClick={() => handleDelete(org)}
-                    className="mt-2 px-3 py-1.5 text-xs rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
-                  >
-                    Excluir Empresa
-                  </button>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => startEdit(org)}
+                      className="px-3 py-1.5 text-xs rounded-md bg-brand-500/10 text-brand-400 hover:bg-brand-500/20 transition-colors cursor-pointer"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(org)}
+                      className="px-3 py-1.5 text-xs rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+                    >
+                      Excluir
+                    </button>
+                  </div>
+                  {editingOrg?.id === org.id && (
+                    <form onSubmit={handleEdit} className="mt-3 p-3 bg-dark-900/40 rounded-lg space-y-3">
+                      <Input
+                        label="Nome"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        required
+                      />
+                      <Input
+                        label="Slug"
+                        value={editSlug}
+                        onChange={(e) => setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        required
+                      />
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={saving}>{saving ? 'Salvando...' : 'Salvar'}</Button>
+                        <button type="button" onClick={() => setEditingOrg(null)} className="px-3 py-1.5 text-xs text-dark-300 hover:text-dark-100">Cancelar</button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </CardContent>
             </Card>

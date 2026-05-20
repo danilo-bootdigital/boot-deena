@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, UseGuards, ForbiddenException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, ForbiddenException, Req } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
@@ -71,6 +71,21 @@ export class AdminController {
       all_agents: true,
     });
 
+    return data;
+  }
+
+  @Put('organizations/:id')
+  async updateOrganization(@Req() req: any, @Param('id') id: string, @Body() body: { name: string; slug: string }) {
+    await this.assertMasterAdmin(req);
+
+    const { data, error } = await this.supabase
+      .from('organizations')
+      .update({ name: body.name, slug: body.slug })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
     return data;
   }
 

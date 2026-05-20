@@ -37,8 +37,8 @@ export default function AgentsPage() {
     max_tokens: 1024,
   });
 
-  const userRole = currentOrg?.role || 'operator';
-  const isAdmin = userRole === 'owner' || userRole === 'admin';
+  const userRole = currentOrg?.role || 'viewer';
+  const isAdmin = userRole === 'owner' || userRole === 'admin' || userRole === 'company_admin' || userRole === 'master_admin';
   const isManager = userRole === 'manager';
   const canCreate = isAdmin;
   const canEdit = isAdmin || isManager;
