@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useApiClient } from '@/hooks/use-api-client';
 import { usePermissions } from '@/hooks/use-permissions';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Organization {
   id: string;
@@ -19,6 +20,7 @@ interface Organization {
 export default function AdminPage() {
   const api = useApiClient();
   const { hasRole } = usePermissions();
+  const { session } = useAuth();
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -29,8 +31,8 @@ export default function AdminPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    loadOrgs();
-  }, []);
+    if (session) loadOrgs();
+  }, [session]);
 
   async function loadOrgs() {
     try {
