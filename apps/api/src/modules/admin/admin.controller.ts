@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 
 @Controller('admin')
-@UseGuards(SupabaseAuthGuard)
+@UseGuards(SupabaseAuthGuard, RolesGuard)
+@Roles('master_admin')
 export class AdminController {
   private supabase;
 

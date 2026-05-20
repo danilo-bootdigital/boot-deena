@@ -15,7 +15,7 @@ export class AgentsService {
     );
   }
 
-  async findAll(organizationId: string, userId: string, filter: any) {
+  async findAll(organizationId: string, _userId: string, filter: any) {
     // Se tem acesso total, retornar todos
     if (filter.allAccess) {
       const { data, error } = await this.supabase

@@ -5,7 +5,7 @@ export type ConversationStatus = 'active' | 'closed' | 'archived' | 'waiting_hum
 export type AiProvider = 'openai' | 'anthropic';
 export type AiModel = 'gpt-4o' | 'gpt-4o-mini' | 'claude-sonnet-4-20250514' | 'claude-haiku-4-20250514';
 
-export type OrgRole = 'owner' | 'admin' | 'manager' | 'operator';
+export type OrgRole = 'owner' | 'admin' | 'company_admin' | 'manager' | 'operator' | 'attendant' | 'viewer' | 'master_admin';
 export type AgentPermission = 'manage' | 'operate' | 'view';
 export type AgentRoleType = 'owner' | 'manager' | 'team';
 
@@ -51,6 +51,14 @@ export interface AccessLevel {
 }
 
 export const DEFAULT_PERMISSIONS: Record<OrgRole, AccessPermissions> = {
+  master_admin: {
+    agents: { create: true, edit: true, delete: true, view: true },
+    conversations: { view: true, intervene: true, export: true },
+    knowledge_base: { create: true, edit: true, delete: true, view: true },
+    members: { invite: true, remove: true, change_role: true },
+    settings: { edit: true, view: true },
+    billing: { view: true, manage: true },
+  },
   owner: {
     agents: { create: true, edit: true, delete: true, view: true },
     conversations: { view: true, intervene: true, export: true },
@@ -58,6 +66,14 @@ export const DEFAULT_PERMISSIONS: Record<OrgRole, AccessPermissions> = {
     members: { invite: true, remove: true, change_role: true },
     settings: { edit: true, view: true },
     billing: { view: true, manage: true },
+  },
+  company_admin: {
+    agents: { create: true, edit: true, delete: true, view: true },
+    conversations: { view: true, intervene: true, export: true },
+    knowledge_base: { create: true, edit: true, delete: true, view: true },
+    members: { invite: true, remove: true, change_role: true },
+    settings: { edit: true, view: true },
+    billing: { view: true, manage: false },
   },
   admin: {
     agents: { create: true, edit: true, delete: true, view: true },
@@ -75,9 +91,25 @@ export const DEFAULT_PERMISSIONS: Record<OrgRole, AccessPermissions> = {
     settings: { edit: false, view: false },
     billing: { view: false, manage: false },
   },
+  attendant: {
+    agents: { create: false, edit: false, delete: false, view: true },
+    conversations: { view: true, intervene: true, export: false },
+    knowledge_base: { create: false, edit: false, delete: false, view: true },
+    members: { invite: false, remove: false, change_role: false },
+    settings: { edit: false, view: false },
+    billing: { view: false, manage: false },
+  },
   operator: {
     agents: { create: false, edit: false, delete: false, view: true },
     conversations: { view: true, intervene: true, export: false },
+    knowledge_base: { create: false, edit: false, delete: false, view: true },
+    members: { invite: false, remove: false, change_role: false },
+    settings: { edit: false, view: false },
+    billing: { view: false, manage: false },
+  },
+  viewer: {
+    agents: { create: false, edit: false, delete: false, view: true },
+    conversations: { view: true, intervene: false, export: false },
     knowledge_base: { create: false, edit: false, delete: false, view: true },
     members: { invite: false, remove: false, change_role: false },
     settings: { edit: false, view: false },
