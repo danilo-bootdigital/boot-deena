@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantFilterGuard } from '../../common/guards/tenant-filter.guard';
