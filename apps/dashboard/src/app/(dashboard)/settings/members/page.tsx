@@ -77,16 +77,15 @@ export default function MembersPage() {
   async function loadData() {
     try {
       const [membersData, agentsData, waData] = await Promise.all([
-        api.get<Member[]>('/profiles/organization'),
-        api.get<Agent[]>('/agents'),
+        api.get<Member[]>('/profiles/organization').catch(() => []),
+        api.get<Agent[]>('/agents').catch(() => []),
         api.get<{ id: string; instance_name: string }[]>('/whatsapp/instances').catch(() => []),
       ]);
       setMembers(membersData);
       setAgents(agentsData);
       setWhatsappInstances(waData);
-    } catch {
-      setMembers([]);
-      setAgents([]);
+    } catch (err) {
+      console.error('Erro ao carregar dados:', err);
     } finally {
       setLoading(false);
     }
@@ -248,7 +247,7 @@ export default function MembersPage() {
               </div>
             </div>
 
-            {formRole !== 'admin' && (
+            {formRole !== 'company_admin' && (
               <div className="bg-dark-900/40 p-4 rounded-lg space-y-3">
                 <label className="block text-sm font-semibold text-dark-200">Acesso a Agentes</label>
                 <div className="flex items-center gap-4">
