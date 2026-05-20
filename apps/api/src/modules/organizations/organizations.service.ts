@@ -123,7 +123,7 @@ export class OrganizationsService {
       userId = userData;
     } else {
       // Buscar no auth
-      const { data: users } = await (this.supabase.auth.admin as any).listUsers({
+      const { data: users } = await (this.supabase.auth as any).admin.listUsers({
         page: 1,
         perPage: 1000,
       });
@@ -138,7 +138,7 @@ export class OrganizationsService {
       if (!dto.password) {
         throw new NotFoundException('Usuário não encontrado. Informe uma senha para criar a conta.');
       }
-      const { data: newUser, error: createError } = await (this.supabase.auth.admin as any).createUser({
+      const { data: newUser, error: createError } = await (this.supabase.auth as any).admin.createUser({
         email: dto.email,
         password: dto.password,
         email_confirm: true,

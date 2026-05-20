@@ -58,7 +58,7 @@ export class ProfilesService {
     (profiles || []).forEach((p: any) => profileMap.set(p.id, p));
 
     // Buscar emails do auth para membros sem profile
-    const { data: authUsers } = await (this.supabase.auth.admin as any).listUsers({
+    const { data: authUsers } = await (this.supabase.auth as any).admin.listUsers({
       page: 1,
       perPage: 1000,
     });
