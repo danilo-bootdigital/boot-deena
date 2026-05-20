@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useApiClient } from '@/hooks/use-api-client';
+import { useOrganization } from '@/hooks/use-organization';
 
 interface WhatsappInstance {
   id: string;
@@ -30,6 +31,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 
 export default function WhatsappPage() {
   const api = useApiClient();
+  const { currentOrg } = useOrganization();
   const [instances, setInstances] = useState<WhatsappInstance[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,19 +43,19 @@ export default function WhatsappPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (currentOrg?.id) loadData();
+  }, [currentOrg?.id]);
 
   async function loadData() {
     try {
       const [inst, ag] = await Promise.all([
-        api.get<WhatsappInstance[]>('/whatsapp/instances'),
-        api.get<Agent[]>('/agents'),
+        api.get<WhatsappInstance[]>('/whatsapp/instances').catch(() => []),
+        api.get<Agent[]>('/agents').catch(() => []),
       ]);
       setInstances(inst);
       setAgents(ag);
-    } catch {
-      setInstances([]);
+    } catch (err) {
+      console.error('Erro ao carregar dados WhatsApp:', err);
     } finally {
       setLoading(false);
     }
