@@ -35,8 +35,10 @@ export default function AdminPage() {
   async function loadOrgs() {
     try {
       const data = await api.get<Organization[]>('/admin/organizations');
-      setOrgs(data);
-    } catch {
+      setOrgs(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Erro ao carregar empresas:', err);
+      setMessage(err?.message || 'Erro ao carregar empresas.');
       setOrgs([]);
     } finally {
       setLoading(false);
