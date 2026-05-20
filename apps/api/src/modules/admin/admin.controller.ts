@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, ForbiddenException, Req } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, ForbiddenException, Req } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
@@ -55,5 +55,24 @@ export class AdminController {
 
     if (error) throw error;
     return data;
+  }
+
+  @Delete('organizations/:id')
+  async deleteOrganization(@Req() req: any, @Param('id') id: string) {
+    await this.assertMasterAdmin(req);
+
+    // Remover membros da org
+    await this.supabase.from('org_members').delete().eq('organization_id', id);
+    // Remover agentes da org
+    await this.supabase.from('agents').delete().eq('organization_id', id);
+    // Remover conversas da org
+    await this.supabase.from('conversations').delete().eq('organization_id', id);
+    // Remover leads da org
+    await this.supabase.from('leads').delete().eq('organization_id', id);
+    // Remover a organização
+    const { error } = await this.supabase.from('organizations').delete().eq('id', id);
+
+    if (error) throw error;
+    return { deleted: true };
   }
 }

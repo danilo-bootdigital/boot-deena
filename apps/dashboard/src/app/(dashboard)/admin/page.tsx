@@ -62,6 +62,17 @@ export default function AdminPage() {
     }
   }
 
+  async function handleDelete(org: Organization) {
+    if (!confirm(`Excluir a empresa "${org.name}"? Isso removerá todos os dados vinculados (membros, agentes, conversas). Esta ação não pode ser desfeita.`)) return;
+    try {
+      await api.delete(`/admin/organizations/${org.id}`);
+      setMessage('Empresa excluída.');
+      loadOrgs();
+    } catch (err: any) {
+      setMessage(err?.message || 'Erro ao excluir empresa.');
+    }
+  }
+
   function generateSlug(name: string) {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
@@ -169,6 +180,12 @@ export default function AdminPage() {
                       )}
                     </div>
                   )}
+                  <button
+                    onClick={() => handleDelete(org)}
+                    className="mt-2 px-3 py-1.5 text-xs rounded-md bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
+                  >
+                    Excluir Empresa
+                  </button>
                 </div>
               </CardContent>
             </Card>
