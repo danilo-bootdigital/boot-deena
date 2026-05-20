@@ -62,14 +62,13 @@ export function AgentTeamTab({ agentId }: Props) {
   async function loadData() {
     try {
       const [agentMembers, orgProfiles] = await Promise.all([
-        api.get<AgentMember[]>(`/agents/${agentId}/members`),
-        api.get<OrgMember[]>('/profiles/organization'),
+        api.get<AgentMember[]>(`/agents/${agentId}/members`).catch(() => []),
+        api.get<OrgMember[]>('/profiles/organization').catch(() => []),
       ]);
       setMembers(agentMembers);
       setOrgMembers(orgProfiles);
-    } catch {
-      setMembers([]);
-      setOrgMembers([]);
+    } catch (err) {
+      console.error('Erro ao carregar equipe:', err);
     } finally {
       setLoading(false);
     }
