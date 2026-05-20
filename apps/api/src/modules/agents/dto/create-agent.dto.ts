@@ -12,6 +12,7 @@ export const createAgentSchema = z.object({
   max_tokens: z.number().min(100).max(8192).default(1024),
   voice_enabled: z.boolean().default(false),
   voice_id: z.enum(['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer']).default('nova'),
+  status: z.enum(['active', 'inactive', 'draft']).default('draft'),
   settings: z.record(z.string(), z.unknown()).optional(),
 });
 
