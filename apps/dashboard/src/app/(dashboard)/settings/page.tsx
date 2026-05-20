@@ -13,14 +13,8 @@ const settingsItems = [
   {
     href: '/settings/members',
     title: 'Membros',
-    description: 'Gerencie os membros da organização e convide novos usuários.',
+    description: 'Gerencie membros da empresa, funções e vinculações a agentes, WhatsApp e pipeline.',
     icon: '👥',
-  },
-  {
-    href: '/settings/access-levels',
-    title: 'Níveis de Acesso',
-    description: 'Configure permissões por nível (Administrador, Gerente de Conta, Operador).',
-    icon: '🔐',
   },
 ];
 
