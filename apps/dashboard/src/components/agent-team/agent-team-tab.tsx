@@ -130,7 +130,7 @@ export function AgentTeamTab({ agentId }: Props) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold">Vincular Usuário ao Agente</h2>
+          <h2 className="text-lg font-semibold">Vincular Membro ao Agente</h2>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-dark-400 mb-4">
@@ -139,7 +139,7 @@ export function AgentTeamTab({ agentId }: Props) {
           <form onSubmit={handleAssign} className="space-y-3">
             <div className="flex gap-3 items-end">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-dark-200 mb-1">Usuário</label>
+                <label className="block text-sm font-medium text-dark-200 mb-1">Membro</label>
                 <select
                   className="w-full rounded-md border border-dark-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40"
                   value={selectedUser}
@@ -205,7 +205,7 @@ export function AgentTeamTab({ agentId }: Props) {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-dark-50">
-                      {member.profiles?.display_name || member.profiles?.full_name || 'Usuário'}
+                      {member.profiles?.display_name || member.profiles?.full_name || 'Membro'}
                     </p>
                     <span className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${ROLE_TYPE_COLORS[member.role_type] || ROLE_TYPE_COLORS.team}`}>
                       {ROLE_TYPE_LABELS[member.role_type] || member.role_type}
