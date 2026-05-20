@@ -1,13 +1,10 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, ForbiddenException, Req } from '@nestjs/common';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
 
 @Controller('admin')
-@UseGuards(SupabaseAuthGuard, RolesGuard)
-@Roles('master_admin')
+@UseGuards(SupabaseAuthGuard)
 export class AdminController {
   private supabase;
 
@@ -18,8 +15,25 @@ export class AdminController {
     );
   }
 
+  private async assertMasterAdmin(req: any) {
+    const user = req.user;
+    if (!user) throw new ForbiddenException('Not authenticated');
+
+    const { data: profile } = await this.supabase
+      .from('profiles')
+      .select('is_master_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.is_master_admin) {
+      throw new ForbiddenException('Acesso restrito a Master Admin');
+    }
+  }
+
   @Get('organizations')
-  async listOrganizations() {
+  async listOrganizations(@Req() req: any) {
+    await this.assertMasterAdmin(req);
+
     const { data, error } = await this.supabase
       .from('organizations')
       .select('*')
@@ -30,7 +44,9 @@ export class AdminController {
   }
 
   @Post('organizations')
-  async createOrganization(@Body() body: { name: string; slug: string }) {
+  async createOrganization(@Req() req: any, @Body() body: { name: string; slug: string }) {
+    await this.assertMasterAdmin(req);
+
     const { data, error } = await this.supabase
       .from('organizations')
       .insert({ name: body.name, slug: body.slug })
